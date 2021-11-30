@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/db_test_task
+    username: postgres
+    password: admin
+  jpa:
+    database: postgresql
+    hibernate.ddl-auto: update
+    generate-ddl: true
+    show-sql: true

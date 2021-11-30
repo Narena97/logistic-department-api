@@ -1,0 +1,42 @@
+package com.example.testtask.entity;
+
+import com.example.testtask.enums.LicenseCategory;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
+import java.time.LocalDate;
+import java.util.Date;
+
+@Data
+@Entity
+@Table(name = "drivers_license")
+@AllArgsConstructor
+@NoArgsConstructor
+public class DriversLicense {
+
+    @Id
+    @Column(name = "drivers_license_id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @Column(name = "drivers_license_number", unique = true, nullable = false)
+    private Long driversLicenseNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private LicenseCategory category;
+
+    @Column(nullable = false)
+    private LocalDate expirationTime;
+
+    public DriversLicense(Long driversLicenseNumber,
+                          LicenseCategory category,
+                          LocalDate expirationTime) {
+        this.driversLicenseNumber = driversLicenseNumber;
+        this.category = category;
+        this.expirationTime = expirationTime;
+    }
+
+}
