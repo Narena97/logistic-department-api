@@ -5,7 +5,7 @@ import com.example.testtask.dto.DriversLicenseDto;
 import com.example.testtask.entity.Driver;
 import com.example.testtask.entity.DriversLicense;
 import com.example.testtask.enums.LicenseCategory;
-import com.example.testtask.exception.DriversLicenseException;
+import com.example.testtask.exception.ValidationException;
 import com.example.testtask.mapper.DriversLicenseMapper;
 import com.example.testtask.repository.DriverRepository;
 import com.example.testtask.repository.DriversLicenseRepository;
@@ -99,7 +99,7 @@ public class DriverControllerTest {
         Assertions.assertEquals(licenses.get(0).getDriversLicenseNumber(), validDriversLicenseNumber1);
         Assertions.assertEquals(licenses.get(0).getCategory(), LicenseCategory.B);
         Assertions.assertEquals(licenses.get(0).getExpirationTime(), validExpirationTime1);
-        Assertions.assertThrows(EntityExistsException.class, () -> driversLicenseService.licenseIsValid(licenseDto));
+        Assertions.assertThrows(EntityExistsException.class, () -> driversLicenseService.licenseIsValid(licenseDto, false));
     }
 
     @Test
@@ -116,7 +116,7 @@ public class DriverControllerTest {
         Assertions.assertEquals(drivers.size(), 0);
         Assertions.assertEquals(licenses.size(), 0);
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(DriversLicenseException.class, () -> driversLicenseService.licenseIsValid(licenseDto));
+        Assertions.assertThrows(ValidationException.class, () -> driversLicenseService.licenseIsValid(licenseDto, false));
     }
 
     @Test
@@ -133,7 +133,7 @@ public class DriverControllerTest {
         Assertions.assertEquals(drivers.size(), 0);
         Assertions.assertEquals(licenses.size(), 0);
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(DriversLicenseException.class, () -> driversLicenseService.licenseIsValid(licenseDto));
+        Assertions.assertThrows(ValidationException.class, () -> driversLicenseService.licenseIsValid(licenseDto, false));
     }
 
     @Test
@@ -150,7 +150,7 @@ public class DriverControllerTest {
         Assertions.assertEquals(drivers.size(), 0);
         Assertions.assertEquals(licenses.size(), 0);
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(DriversLicenseException.class, () -> driversLicenseService.licenseIsValid(licenseDto));
+        Assertions.assertThrows(ValidationException.class, () -> driversLicenseService.licenseIsValid(licenseDto, false));
     }
 
     @Test
@@ -167,7 +167,7 @@ public class DriverControllerTest {
         Assertions.assertEquals(drivers.size(), 0);
         Assertions.assertEquals(licenses.size(), 0);
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(DriversLicenseException.class, () -> driversLicenseService.licenseIsValid(licenseDto));
+        Assertions.assertThrows(ValidationException.class, () -> driversLicenseService.licenseIsValid(licenseDto, false));
     }
 
     /*@Test

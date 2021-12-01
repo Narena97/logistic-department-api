@@ -1,7 +1,7 @@
 package com.example.testtask.controller;
 
 import com.example.testtask.dto.CarDto;
-import com.example.testtask.exception.DriversLicenseException;
+import com.example.testtask.exception.ValidationException;
 import com.example.testtask.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +22,7 @@ public class CarController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.FOUND)
-    public CarDto getCar(@PathVariable Long id) throws DriversLicenseException {
+    public CarDto getCar(@PathVariable Long id) {
         return carService.getCar(id);
     }
 

@@ -7,10 +7,11 @@ import com.example.testtask.mapper.CarMapper;
 import com.example.testtask.mapper.DriverMapper;
 import com.example.testtask.mapper.DriversLicenseMapper;
 import com.example.testtask.repository.DriverRepository;
+import com.example.testtask.utils.Messages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,7 +43,9 @@ public class DriverService {
 
     public DriverDto getDriver(Long id) {
         Optional<Driver> optionalDriver = driverRepository.findById(id);
-        return optionalDriver.map(driverMapper::driverToDriverDto).orElseThrow(null);
+        return optionalDriver.map(driverMapper::driverToDriverDto)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(Messages.GET_ENTITY + Messages.NOT_FOUND,
+                        Messages.DRIVER, Messages.DRIVER, id)));
     }
 
     public List<DriverDto> getDrivers() {
@@ -51,30 +54,33 @@ public class DriverService {
                 .collect(Collectors.toList());
     }
 
-    //@Transactional
     public void addDriver(DriverDto driverDto) {
-        //driversLicenseService.saveLicense(driverDto.getLicense());
-        if (driversLicenseService.licenseIsValid(driverDto.getLicense())) {
-            Driver driver = driverMapper.driverDtoToDriver(driverDto);
-            driverRepository.save(driver);
-        }
-    }
-
-    public void updateDriver(Long id, DriverDto newDriver) {
-        Driver driver = driverRepository.findById(id).orElseThrow(null);
-        if (driver != null) {
-            driversLicenseMapper.updateDriversLicenseFromDto(newDriver.getLicense(), driver.getLicense());
-            driverRepository.save(driver);
+        if (driverDto.getLicense() != null) {
+            if (driversLicenseService.licenseIsValid(driverDto.getLicense(), false)) {
+                Driver driver = driverMapper.driverDtoToDriver(driverDto);
+                driverRepository.save(driver);
+            }
         } else {
             //throw new ex
         }
     }
 
+    public void updateDriver(Long id, DriverDto newDriver) {
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(Messages.UPDATE_ENTITY + Messages.NOT_FOUND,
+                        Messages.DRIVER, Messages.DRIVER, id)));
+        if (driversLicenseService.licenseIsValid(newDriver.getLicense(), true)) {
+            driversLicenseMapper.updateDriversLicenseFromDto(newDriver.getLicense(), driver.getLicense());
+            driverRepository.save(driver);
+        }
+    }
+
     public void deleteDriver(Long id) {
-        Driver driver = driverRepository.findById(id).orElseThrow(null);
+        Driver driver = driverRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(Messages.DELETE_ENTITY + Messages.NOT_FOUND,
+                        Messages.DRIVER, Messages.DRIVER, id)));
         if (driver != null) {
             driverRepository.deleteById(id);
-            //driversLicenseService.deleteLicense(driver.getLicense().getId());
         }
     }
 

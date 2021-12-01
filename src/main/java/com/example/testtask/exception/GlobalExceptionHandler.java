@@ -37,8 +37,8 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(DriversLicenseException.class)
-    public ExceptionResponse driversLicenseIsNotValid(DriversLicenseException exception) {
+    @ExceptionHandler(ValidationException.class)
+    public ExceptionResponse inputIsNotValid(ValidationException exception) {
         ExceptionResponse response = new ExceptionResponse();
         response.setErrorCode("400 Bad Request");
         response.setErrorMessage(exception.getMessage());
