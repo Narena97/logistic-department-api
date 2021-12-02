@@ -11,10 +11,8 @@ import com.example.testtask.repository.DriversLicenseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
@@ -30,38 +28,34 @@ public class InitClass implements CommandLineRunner {
         driversLicenseRepository.deleteAll();
         carRepository.deleteAll();
 
-        /*DriversLicense license = driversLicenseRepository.saveAndFlush(
-                new DriversLicense().setDriversLicenseNumber(12345L)
-                        .setCategory(LicenseCategory.B)
-                        .setExpirationTime(new Date(2021-12-12)));
-        DriversLicense license2 = driversLicenseRepository.saveAndFlush(
-                new DriversLicense().setDriversLicenseNumber(54321L)
-                        .setCategory(LicenseCategory.C)
-                        .setExpirationTime(new Date(2022-10-21)));
-        DriversLicense license3 = driversLicenseRepository.saveAndFlush(
-                new DriversLicense().setDriversLicenseNumber(13524L)
-                        .setCategory(LicenseCategory.B)
-                        .setExpirationTime(new Date(2023-11-15)));
-        DriversLicense license4 = driversLicenseRepository.saveAndFlush(
-                new DriversLicense().setDriversLicenseNumber(531342L)
-                        .setCategory(LicenseCategory.C)
-                        .setExpirationTime(new Date(2024-9-10)));
+        DriversLicense license = new DriversLicense().setDriversLicenseNumber(1234567890L)
+                .setCategory(LicenseCategory.B)
+                .setExpirationTime(LocalDate.of(2021, 12, 12));
+        DriversLicense license2 = new DriversLicense().setDriversLicenseNumber(5432167890L)
+                .setCategory(LicenseCategory.C)
+                .setExpirationTime(LocalDate.of(2022, 12, 12));
+        DriversLicense license3 = new DriversLicense().setDriversLicenseNumber(1352425698L)
+                .setCategory(LicenseCategory.B)
+                .setExpirationTime(LocalDate.of(2025, 12, 25));
+        DriversLicense license4 = new DriversLicense().setDriversLicenseNumber(53134214785L)
+                .setCategory(LicenseCategory.C)
+                .setExpirationTime(LocalDate.of(2026, 9, 5));
 
         Driver driver = driverRepository.save(new Driver().setLicense(license));
         Driver driver1 = driverRepository.save(new Driver().setLicense(license2));
         Driver driver2 = driverRepository.save(new Driver().setLicense(license3));
         Driver driver3 = driverRepository.save(new Driver().setLicense(license4));
 
-        Car car = carRepository.saveAndFlush(new Car().setCarNumber("A503CH").setType(CarType.PASSENGER_CAR));
-        Car car1 = carRepository.saveAndFlush(new Car().setCarNumber("B456MO").setType(CarType.TRUCK));
-        Car car2 = carRepository.saveAndFlush(new Car().setCarNumber("C371XB").setType(CarType.BUS));
-        Car car3 = carRepository.saveAndFlush(new Car().setCarNumber("H981KE").setType(CarType.TRUCK));
+        Car car = carRepository.saveAndFlush(new Car().setCarNumber("A503CH 97").setType(CarType.PASSENGER_CAR));
+        Car car1 = carRepository.saveAndFlush(new Car().setCarNumber("B456MO 55").setType(CarType.TRUCK));
+        Car car2 = carRepository.saveAndFlush(new Car().setCarNumber("C371XB 44").setType(CarType.BUS));
+        Car car3 = carRepository.saveAndFlush(new Car().setCarNumber("H981KE 32").setType(CarType.TRUCK));
 
         driver.addCar(car);
         driver.addCar(car1);
         driver.addCar(car2);
 
-        driverRepository.saveAndFlush(driver);*/
+        driverRepository.saveAndFlush(driver);
 
     }
 }

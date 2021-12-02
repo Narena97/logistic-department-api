@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     public ExceptionResponse driversLicenseEnumIsNotValid(HttpMessageNotReadableException exception) {
         ExceptionResponse response = new ExceptionResponse();
         response.setErrorCode("400 Bad Request");
-        response.setErrorMessage("The category of driver's license must be B, C or D");
+        response.setErrorMessage(exception.getMessage());
         response.setTimestamp(Calendar.getInstance(TimeZone.getTimeZone("Europe/Moscow")).getTime());
 
         return response;

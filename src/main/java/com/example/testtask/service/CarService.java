@@ -33,7 +33,7 @@ public class CarService {
     public CarDto getCar(Long id) throws ValidationException {
         Optional<Car> optionalCar = carRepository.findById(id);
         return optionalCar.map(carMapper::carToCarDto).orElseThrow(() ->
-                new EntityNotFoundException(String.format(Messages.GET_ENTITY + Messages.NOT_FOUND, Messages.CAR, Messages.CAR, id)));
+                new EntityNotFoundException(String.format(Messages.GET_CAR, id)));
     }
 
     public List<CarDto> getCars() {
@@ -48,8 +48,7 @@ public class CarService {
             Optional<Car> first = cars.stream().filter(car -> car.getCarNumber().equals(carDto.getCarNumber())).findFirst();
 
             if (first.isPresent()) {
-                throw new EntityExistsException(String.format(Messages.ADD_ENTITY + Messages.WITH_NUMBER + Messages.ALREADY_EXISTS,
-                        Messages.CAR, Messages.CAR, Messages.CAR, carDto.getCarNumber()));
+                throw new EntityExistsException(String.format(Messages.ADD_CAR, carDto.getCarNumber()));
             } else {
                 Car car = carMapper.carDtoToCar(carDto);
                 carRepository.save(car);
@@ -59,7 +58,7 @@ public class CarService {
 
     public void updateCar(Long id, CarDto newCar) {
         Car car = carRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format(Messages.UPDATE_ENTITY + Messages.NOT_FOUND, Messages.CAR, Messages.CAR, id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format(Messages.UPDATE_CAR, id)));
         if (carIsValid(newCar, true)) {
             carMapper.updateCarFromDto(newCar, car);
             carRepository.save(car);
@@ -67,29 +66,24 @@ public class CarService {
     }
 
     public void deleteCar(Long id) {
-        Car car = carRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format(Messages.DELETE_ENTITY + Messages.NOT_FOUND, Messages.CAR, Messages.CAR, id)));
+        Car car = carRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.DELETE_CAR, id)));
         carRepository.delete(car);
     }
 
     private boolean carIsValid(CarDto carDto, boolean isUpdate) {
         if (carDto.getCarNumber() == null && !isUpdate) {
-            throw new ValidationException(String.format(Messages.ADD_ENTITY + Messages.NUMBER + Messages.SHOULD_NOT_BE_EMPTY, Messages.CAR, Messages.CAR));
+            throw new ValidationException(Messages.ADD_CAR_NUMBER_IS_EMPTY);
         }
         Pattern pattern = Pattern.compile("^[ABEKMHOPCTYX]\\d{3}[ABEKMHOPCTYX]{2}\\s\\d{2,3}$");
         Matcher matcher = pattern.matcher(carDto.getCarNumber());
         if (!matcher.matches()) {
-            throw new ValidationException(isUpdate ?
-                    String.format(Messages.UPDATE_ENTITY + Messages.NUMBER + Messages.IS_NOT_VALID, Messages.CAR, Messages.CAR) :
-                    String.format(Messages.ADD_ENTITY + Messages.NUMBER + Messages.IS_NOT_VALID, Messages.CAR, Messages.CAR));
+            throw new ValidationException(isUpdate ? Messages.UPDATE_CAR_NUMBER_IS_NOT_VALID : Messages.ADD_CAR_NUMBER_IS_NOT_VALID);
         }
         if (carDto.getDriverId() != null) {
-            throw new ValidationException(isUpdate ?
-                    String.format(Messages.UPDATE_ENTITY + Messages.DRIVER + Messages.SHOULD_NOT_BE_HERE, Messages.CAR, Messages.CAR, Messages.UPDATED) :
-                    String.format(Messages.ADD_ENTITY + Messages.DRIVER + Messages.SHOULD_NOT_BE_HERE, Messages.CAR, Messages.CAR, Messages.ADDED));
+            throw new ValidationException(isUpdate ? Messages.UPDATE_CAR_DRIVER_ID_IS_PRESENT : Messages.ADD_CAR_DRIVER_ID_IS_PRESENT);
         }
         if (carDto.getType() == null && !isUpdate) {
-            throw new ValidationException(String.format(Messages.ADD_ENTITY + Messages.TYPE + Messages.SHOULD_NOT_BE_EMPTY, Messages.CAR, Messages.CAR));
+            throw new ValidationException(Messages.ADD_CAR_TYPE_IS_EMPTY);
         }
         return true;
     }
