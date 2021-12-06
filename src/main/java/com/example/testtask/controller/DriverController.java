@@ -20,11 +20,13 @@ public class DriverController {
     }
 
     @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.FOUND)
     public DriverDto getDriver(@PathVariable Long id) {
         return driverService.getDriver(id);
     }
 
     @GetMapping
+    @ResponseStatus(HttpStatus.FOUND)
     public List<DriverDto> getDrivers() {
         return driverService.getDrivers();
     }

@@ -34,10 +34,14 @@ public class DriversLicenseService {
     }
 
     public boolean licenseIsValid(DriversLicenseDto driversLicenseDto, boolean isUpdate) {
-        String licenseNumber = driversLicenseDto.getDriversLicenseNumber().toString();
         LocalDate currentDate = LocalDate.now();
-        if (licenseNumber.length() != 10) {
-            throw new ValidationException(isUpdate ? Messages.UPDATE_DRIVER_LICENSE_NUMBER_IS_NOT_VALID : Messages.ADD_DRIVER_LICENSE_NUMBER_IS_NOT_VALID);
+        if (!isUpdate && driversLicenseDto.getDriversLicenseNumber() == null) {
+            throw new ValidationException(Messages.ADD_DRIVER_LICENSE_NUMBER_IS_EMPTY);
+        } else if (driversLicenseDto.getDriversLicenseNumber() != null){
+            String licenseNumber = driversLicenseDto.getDriversLicenseNumber().toString();
+            if (licenseNumber.length() != 10) {
+                throw new ValidationException(isUpdate ? Messages.UPDATE_DRIVER_LICENSE_NUMBER_IS_NOT_VALID : Messages.ADD_DRIVER_LICENSE_NUMBER_IS_NOT_VALID);
+            }
         }
         if (driversLicenseDto.getCategory() == null && !isUpdate) {
             throw new ValidationException(Messages.ADD_DRIVER_LICENSE_CATEGORY_IS_EMPTY);
@@ -45,17 +49,10 @@ public class DriversLicenseService {
         if (driversLicenseDto.getExpirationTime() == null && !isUpdate) {
             throw new ValidationException(Messages.ADD_DRIVER_LICENSE_EXPIRATION_TIME_IS_EMPTY);
         }
-        if (!driversLicenseDto.getExpirationTime().isAfter(currentDate)) {
+        if (driversLicenseDto.getExpirationTime() != null && !driversLicenseDto.getExpirationTime().isAfter(currentDate)) {
             throw new ValidationException(isUpdate ? Messages.UPDATE_DRIVER_LICENSE_EXPIRED : Messages.ADD_DRIVER_LICENSE_EXPIRED);
         }
 
-        List<DriversLicense> licenses = driversLicenseRepository.findAll();
-
-        for (DriversLicense license : licenses) {
-            if (license.getDriversLicenseNumber().equals(driversLicenseDto.getDriversLicenseNumber())) {
-                throw new EntityExistsException(String.format(Messages.ADD_DRIVER_LICENSE_EXISTS, driversLicenseDto.getDriversLicenseNumber()));
-            }
-        }
         return true;
     }
 

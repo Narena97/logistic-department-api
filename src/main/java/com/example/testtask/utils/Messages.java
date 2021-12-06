@@ -25,12 +25,12 @@ public class Messages {
     public static final String REMOVE_CAR_FROM_DRIVER_THAT_NOT_FOUND = "Could not remove car from driver: driver with id %d not found";
     public static final String REMOVE_CAR_THAT_IS_NOT_FOUND_FROM_DRIVER = "Could not remove car from driver: this driver does not have car with id %d";
     public static final String UPDATE_DRIVER_LICENSE_NUMBER_IS_NOT_VALID = "Could not update driver: driver's license number should be 10";
+    public static final String ADD_DRIVER_LICENSE_NUMBER_IS_EMPTY = "Could not add new driver: driver's license number should not be empty";
     public static final String ADD_DRIVER_LICENSE_NUMBER_IS_NOT_VALID = "Could not add new driver: driver's license number should be 10";
     public static final String ADD_DRIVER_LICENSE_CATEGORY_IS_EMPTY = "Could not add new driver: driver's license category should not be empty";
     public static final String ADD_DRIVER_LICENSE_EXPIRATION_TIME_IS_EMPTY = "Could not add new driver: driver's license expiration time should not be empty";
     public static final String UPDATE_DRIVER_LICENSE_EXPIRED = "Could not update driver: driver's license expired";
     public static final String ADD_DRIVER_LICENSE_EXPIRED = "Could not add driver: driver's license expired";
-    public static final String ADD_DRIVER_LICENSE_EXISTS = "Could not add new driver: driver's license with number %d already exists";
     public static final String ADD_CAR_TO_DRIVER_MISMATCH = "Could not add new driver to car: driver's license does not allow driving this car";
     public static final String ADD_CAR_THAT_HAS_DRIVER_TO_ANOTHER_DRIVER = "Could not add new driver to car: this car already has a driver";
 
