@@ -1,7 +1,6 @@
 package com.example.testtask.service;
 
 import com.example.testtask.dto.DriversLicenseDto;
-import com.example.testtask.entity.DriversLicense;
 import com.example.testtask.exception.ValidationException;
 import com.example.testtask.mapper.DriversLicenseMapper;
 import com.example.testtask.repository.DriversLicenseRepository;
@@ -9,7 +8,6 @@ import com.example.testtask.utils.Messages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityExistsException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +35,7 @@ public class DriversLicenseService {
         LocalDate currentDate = LocalDate.now();
         if (!isUpdate && driversLicenseDto.getDriversLicenseNumber() == null) {
             throw new ValidationException(Messages.ADD_DRIVER_LICENSE_NUMBER_IS_EMPTY);
-        } else if (driversLicenseDto.getDriversLicenseNumber() != null){
+        } else if (driversLicenseDto.getDriversLicenseNumber() != null) {
             String licenseNumber = driversLicenseDto.getDriversLicenseNumber().toString();
             if (licenseNumber.length() != 10) {
                 throw new ValidationException(isUpdate ? Messages.UPDATE_DRIVER_LICENSE_NUMBER_IS_NOT_VALID : Messages.ADD_DRIVER_LICENSE_NUMBER_IS_NOT_VALID);

@@ -40,6 +40,11 @@ public class Driver {
         car.setDriver(this);
     }
 
+    public void addCars(List<Car> carsRequest) {
+        cars.addAll(carsRequest);
+        cars.forEach(car -> car.setDriver(this));
+    }
+
     public void removeCar(Car car) {
         cars.remove(car);
         car.setDriver(null);

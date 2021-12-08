@@ -1,5 +1,6 @@
 package com.example.testtask.service;
 
+import com.example.testtask.dto.CarDto;
 import com.example.testtask.dto.DriverDto;
 import com.example.testtask.dto.DriversLicenseDto;
 import com.example.testtask.entity.Car;
@@ -96,16 +97,17 @@ public class DriverService {
         Driver driver = driverRepository.findById(driverId).orElseThrow(() ->
                 new EntityNotFoundException(String.format(Messages.ADD_CAR_TO_DRIVER_THAT_NOT_FOUND, driverId)));
         List<Car> cars = driver.getCars();
-        Car car = carMapper.carDtoToCar(carService.getCar(carId));
-        if (cars.contains(car)) {
+        CarDto carDto = carService.getCar(carId);
+        Optional<Car> first = cars.stream().filter(car -> car.getCarNumber().equals(carDto.getCarNumber())).findFirst();
+        if (first.isPresent()) {
             throw new ValidationException(String.format(Messages.ADD_DUPLICATE_CAR_TO_DRIVER, carId));
         } else {
             if (cars.size() < 3) {
-                if ((driver.getLicense().getCategory() == LicenseCategory.B && car.getType() == CarType.PASSENGER_CAR) ||
-                        (driver.getLicense().getCategory() == LicenseCategory.C && car.getType() == CarType.TRUCK) ||
-                        (driver.getLicense().getCategory() == LicenseCategory.D && car.getType() == CarType.BUS)) {
-                    if (car.getDriver() != null) {
-                        driver.addCar(car);
+                if ((driver.getLicense().getCategory() == LicenseCategory.B && carDto.getType() == CarType.PASSENGER_CAR) ||
+                        (driver.getLicense().getCategory() == LicenseCategory.C && carDto.getType() == CarType.TRUCK) ||
+                        (driver.getLicense().getCategory() == LicenseCategory.D && carDto.getType() == CarType.BUS)) {
+                    if (carDto.getDriverId() == null) {
+                        driver.addCar(carMapper.carDtoToCar(carDto));
                         driverRepository.save(driver);
                     } else {
                         throw new ValidationException(Messages.ADD_CAR_THAT_HAS_DRIVER_TO_ANOTHER_DRIVER);

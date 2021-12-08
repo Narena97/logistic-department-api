@@ -12,8 +12,6 @@ public interface DriversLicenseMapper {
 
     DriversLicenseDto driversLicenseToDriversLicenseDto(DriversLicense driversLicense);
 
-    DriversLicense driversLicenseDtoToDriversLicense(DriversLicenseDto driversLicenseDto);
-
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateDriversLicenseFromDto(DriversLicenseDto driversLicenseDto, @MappingTarget DriversLicense driversLicense);
 

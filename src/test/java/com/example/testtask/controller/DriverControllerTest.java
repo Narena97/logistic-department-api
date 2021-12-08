@@ -2,21 +2,15 @@ package com.example.testtask.controller;
 
 import com.example.testtask.dto.DriverDto;
 import com.example.testtask.dto.DriversLicenseDto;
+import com.example.testtask.entity.Car;
 import com.example.testtask.entity.Driver;
 import com.example.testtask.entity.DriversLicense;
+import com.example.testtask.enums.CarType;
 import com.example.testtask.enums.LicenseCategory;
 import com.example.testtask.exception.ValidationException;
-import com.example.testtask.mapper.DriverMapper;
-import com.example.testtask.repository.DriverRepository;
-import com.example.testtask.repository.DriversLicenseRepository;
-import com.example.testtask.service.DriverService;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -25,44 +19,16 @@ import org.springframework.http.ResponseEntity;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DriverControllerTest {
+public class DriverControllerTest extends ControllerTest {
 
-    public static final Long validDriversLicenseNumber = 1234567890L;
-    public static final Long validDriversLicenseNumber1 = 1782394565L;
     public static final Long validDriversLicenseNumber2 = 9745213056L;
     public static final Long notValidDriversLicenseNumber = 98765432101234569L;
 
-    public static final LocalDate validExpirationTime = LocalDate.of(2025, 12, 25);
-    public static final LocalDate validExpirationTime1 = LocalDate.of(2024, 10, 5);
     public static final LocalDate validExpirationTime2 = LocalDate.of(2028, 9, 15);
     public static final LocalDate notValidExpirationTime = LocalDate.of(2015, 12, 25);
-
-    private final TestRestTemplate restTemplate;
-    private final DriverRepository driverRepository;
-    private final DriversLicenseRepository driversLicenseRepository;
-    private final DriverService driverService;
-    private final DriverMapper driverMapper;
-
-    @Autowired
-    public DriverControllerTest(TestRestTemplate restTemplate,
-                                DriverRepository driverRepository,
-                                DriversLicenseRepository driversLicenseRepository,
-                                DriverService driverService,
-                                DriverMapper driverMapper) {
-        this.restTemplate = restTemplate;
-        this.driverRepository = driverRepository;
-        this.driversLicenseRepository = driversLicenseRepository;
-        this.driverMapper = driverMapper;
-        this.driverService = driverService;
-    }
-
-    @BeforeEach
-    public void clean() {
-        driverRepository.deleteAll();
-    }
 
     @Test
     @DisplayName("Adding a driver")
@@ -215,7 +181,11 @@ public class DriverControllerTest {
         DriversLicenseDto licenseDto = new DriversLicenseDto(validDriversLicenseNumber1, LicenseCategory.C, validExpirationTime1);
         DriverDto driverDto = new DriverDto(licenseDto);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/" + id, HttpMethod.PUT, new HttpEntity<>(driverDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(driverDto),
+                Void.class,
+                id);
 
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
@@ -231,12 +201,16 @@ public class DriverControllerTest {
     @Test
     @DisplayName("Updating a driver that does not exist")
     public void updateDriverThatIsNotFound() {
-        Long id = createTestDriver().getId();
+        Long wrongDriverId = createTestDriver().getId() + 1L;
 
         DriversLicenseDto licenseDto = new DriversLicenseDto(validDriversLicenseNumber1, LicenseCategory.C, validExpirationTime1);
         DriverDto driverDto = new DriverDto(licenseDto);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/" + id + 1L, HttpMethod.PUT, new HttpEntity<>(driverDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(driverDto),
+                Void.class,
+                wrongDriverId);
 
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
@@ -247,7 +221,7 @@ public class DriverControllerTest {
         Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime);
         Assertions.assertEquals(drivers.size(), 1);
         Assertions.assertEquals(licenses.size(), 1);
-        Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.updateDriver(id + 1L, driverDto));
+        Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.updateDriver(wrongDriverId, driverDto));
     }
 
     @Test
@@ -257,7 +231,11 @@ public class DriverControllerTest {
 
         DriverDto driverDto = new DriverDto();
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/" + id, HttpMethod.PUT, new HttpEntity<>(driverDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(driverDto),
+                Void.class,
+                id);
 
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
@@ -279,7 +257,11 @@ public class DriverControllerTest {
         DriversLicenseDto licenseDto = new DriversLicenseDto(notValidDriversLicenseNumber, LicenseCategory.C, validExpirationTime1);
         DriverDto driverDto = new DriverDto(licenseDto);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/" + id, HttpMethod.PUT, new HttpEntity<>(driverDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(driverDto),
+                Void.class,
+                id);
 
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
@@ -301,7 +283,11 @@ public class DriverControllerTest {
         DriversLicenseDto licenseDto = new DriversLicenseDto(validDriversLicenseNumber1, LicenseCategory.C, notValidExpirationTime);
         DriverDto driverDto = new DriverDto(licenseDto);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/" + id, HttpMethod.PUT, new HttpEntity<>(driverDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(driverDto),
+                Void.class,
+                id);
 
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
@@ -323,7 +309,11 @@ public class DriverControllerTest {
         DriversLicenseDto licenseDto = new DriversLicenseDto(null, LicenseCategory.C, validExpirationTime1);
         DriverDto driverDto = new DriverDto(licenseDto);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/" + id, HttpMethod.PUT, new HttpEntity<>(driverDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(driverDto),
+                Void.class,
+                id);
 
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
@@ -341,7 +331,11 @@ public class DriverControllerTest {
     public void deleteDriverTest() {
         Long id = createTestDriver().getId();
 
-        ResponseEntity<DriverDto> responseEntity = restTemplate.exchange("/api/drivers/" + id, HttpMethod.DELETE, null, DriverDto.class);
+        ResponseEntity<DriverDto> responseEntity = restTemplate.exchange("/api/drivers/{1}",
+                HttpMethod.DELETE,
+                null,
+                DriverDto.class,
+                id);
 
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
@@ -355,9 +349,13 @@ public class DriverControllerTest {
     @Test
     @DisplayName("Deleting a driver with wrong id")
     public void deleteDriverThatIsNotFoundTest() {
-        Long id = createTestDriver().getId();
+        Long wrongDriverId = createTestDriver().getId() + 1L;
 
-        ResponseEntity<DriverDto> responseEntity = restTemplate.exchange("/api/drivers/" + id + 1L, HttpMethod.DELETE, null, DriverDto.class);
+        ResponseEntity<DriverDto> responseEntity = restTemplate.exchange("/api/drivers/{1}",
+                HttpMethod.DELETE,
+                null,
+                DriverDto.class,
+                wrongDriverId);
 
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
@@ -368,7 +366,7 @@ public class DriverControllerTest {
         Assertions.assertEquals(drivers.get(0).getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
         Assertions.assertEquals(drivers.get(0).getLicense().getCategory(), LicenseCategory.B);
         Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime);
-        Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.deleteDriver(id + 1L));
+        Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.deleteDriver(wrongDriverId));
     }
 
     @Test
@@ -376,7 +374,9 @@ public class DriverControllerTest {
     public void getDriverTest() {
         Long id = createTestDriver().getId();
 
-        ResponseEntity<DriverDto> responseEntity = restTemplate.getForEntity("/api/drivers/" + id, DriverDto.class);
+        ResponseEntity<DriverDto> responseEntity = restTemplate.getForEntity("/api/drivers/{1}",
+                DriverDto.class,
+                id);
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.FOUND);
         Assertions.assertEquals(responseEntity.getBody().getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
@@ -387,13 +387,15 @@ public class DriverControllerTest {
     @Test
     @DisplayName("Getting a driver with wrong id")
     public void getDriverThatIsNotFoundTest() {
-        Long id = createTestDriver().getId();
+        Long wrongDriverId = createTestDriver().getId() + 1L;
 
-        ResponseEntity<DriverDto> responseEntity = restTemplate.getForEntity("/api/drivers/" + id + 1L, DriverDto.class);
+        ResponseEntity<DriverDto> responseEntity = restTemplate.getForEntity("/api/drivers/{1}",
+                DriverDto.class,
+                wrongDriverId);
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
         Assertions.assertNull(responseEntity.getBody().getLicense());
-        Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.getDriver(id + 1L));
+        Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.getDriver(wrongDriverId));
     }
 
     @Test
@@ -431,11 +433,246 @@ public class DriverControllerTest {
         Assertions.assertEquals(body[2].getLicense().getExpirationTime(), validExpirationTime2);
     }
 
-    private Driver createTestDriver() {
-        DriversLicense license = new DriversLicense(validDriversLicenseNumber, LicenseCategory.B, validExpirationTime);
-        Driver driver = new Driver(license);
+    @Test
+    @DisplayName("Adding a car to driver")
+    public void addCarToDriverTest() {
+        Long driverId = createTestDriver().getId();
+        Long carId = createTestCar().getId();
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                driverId,
+                carId);
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().get(0).getCarNumber(), validCarNumber1);
+        Assertions.assertEquals(drivers.get(0).getCars().get(0).getType(), CarType.PASSENGER_CAR);
+        Assertions.assertEquals(drivers.get(0).getCars().get(0).getDriver().getId(), driverId);
+        Assertions.assertEquals(cars.get(0).getDriver().getId(), driverId);
+    }
+
+    @Test
+    @DisplayName("Adding a car to driver with wrong id")
+    public void addCarToDriverThatIsNotFoundTest() {
+        Long wrongDriverId = createTestDriver().getId() + 1L;
+        Long carId = createTestCar().getId();
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                wrongDriverId,
+                carId);
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Assertions.assertNull(cars.get(0).getDriver());
+    }
+
+    @Test
+    @DisplayName("Adding a car with wrong id to driver")
+    public void addCarThatIsNotFoundToDriverTest() {
+        Long driverId = createTestDriver().getId();
+        Long wrongCarId = createTestCar().getId() + 1L;
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                driverId,
+                wrongCarId);
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Assertions.assertNull(cars.get(0).getDriver());
+    }
+
+    @Test
+    @DisplayName("Adding a car that driver already has")
+    public void addDuplicateCarToDriverTest() {
+        Driver driver = addTestCarToTestDriver();
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                driver.getId(),
+                driver.getCars().get(0).getId());
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
+    }
+
+    @Test
+    @DisplayName("Adding a car that already has driver to another driver")
+    public void addCarWithDriverToAnotherDriverTest() {
+        Driver driver = addTestCarToTestDriver();
+
+        Driver newDriver = createTestDriver1();
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                newDriver.getId(),
+                driver.getCars().get(0).getId());
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
+        Assertions.assertEquals(drivers.size(), 2);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
+        Assertions.assertEquals(drivers.get(1).getCars().size(), 0);
+    }
+
+    @Test
+    @DisplayName("Adding a car that does not correspond to the category of driver's license")
+    public void addCarToDriverWithWrongCategoryTest() {
+        Driver driver = createTestDriver();
+        Car car = createTestCar1();
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                driver.getId(),
+                car.getId());
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+    }
+
+    @Test
+    @DisplayName("Adding a car over driver's limit")
+    public void addFourthCarToDriverTest() {
+        Driver driver = createTestDriver();
+        Car car1 = new Car(validCarNumber1, CarType.PASSENGER_CAR);
+        Car car2 = new Car(validCarNumber2, CarType.PASSENGER_CAR);
+        Car car3 = new Car(validCarNumber3, CarType.PASSENGER_CAR);
+        Car car4 = new Car(validCarNumber4, CarType.PASSENGER_CAR);
+        carRepository.saveAll(Arrays.asList(car1, car2, car3, car4));
+        driver.addCars(Arrays.asList(car1, car2, car3));
         driverRepository.save(driver);
-        return driverRepository.findAll().get(0);
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                driver.getId(),
+                car4.getId());
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 4);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 3);
+    }
+
+    @Test
+    @DisplayName("Remove a car from driver")
+    public void removeCarFromDriverTest() {
+        Driver driver = addTestCarToTestDriver();
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/removeCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                driver.getId(),
+                driver.getCars().get(0).getId());
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Assertions.assertNull(cars.get(0).getDriver());
+    }
+
+    @Test
+    @DisplayName("Remove a car that does not exists from driver")
+    public void removeCarThatIsNotFoundFromDriverTest() {
+        Driver driver = addTestCarToTestDriver();
+        Long wrongCarId = driver.getCars().get(0).getId() + 1L;
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/removeCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                driver.getId(),
+                wrongCarId);
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
+        Assertions.assertEquals(cars.get(0).getDriver().getId(), driver.getId());
+    }
+
+    @Test
+    @DisplayName("Remove a car from driver that does not exists ")
+    public void removeCarFromDriverThatIsNotFoundTest() {
+        Driver driver = addTestCarToTestDriver();
+        Long wrongDriverId = driver.getId() + 1L;
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/removeCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                wrongDriverId,
+                driver.getCars().get(0).getId());
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
+        Assertions.assertEquals(cars.get(0).getDriver().getId(), driver.getId());
+    }
+
+    private Driver addTestCarToTestDriver() {
+        Driver driver = createTestDriver();
+        Car car = createTestCar();
+        driver.addCar(car);
+        return driverRepository.save(driver);
     }
 
 }

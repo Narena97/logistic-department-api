@@ -4,16 +4,9 @@ import com.example.testtask.dto.CarDto;
 import com.example.testtask.entity.Car;
 import com.example.testtask.enums.CarType;
 import com.example.testtask.exception.ValidationException;
-import com.example.testtask.mapper.CarMapper;
-import com.example.testtask.repository.CarRepository;
-import com.example.testtask.service.CarService;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -23,39 +16,14 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class CarControllerTest {
+public class CarControllerTest extends ControllerTest {
 
-    public static final String validCarNumber = "A504BC 97";
-    public static final String validCarNumber1 = "B279EP 44";
-    public static final String validCarNumber2 = "T671MO 99";
     public static final String notValidCarNumber = "F5045BC97";
-
-    private final TestRestTemplate restTemplate;
-    private final CarService carService;
-    private final CarRepository carRepository;
-    private final CarMapper carMapper;
-
-    @Autowired
-    public CarControllerTest(TestRestTemplate restTemplate,
-                             CarService carService,
-                             CarRepository carRepository,
-                             CarMapper carMapper) {
-        this.restTemplate = restTemplate;
-        this.carService = carService;
-        this.carRepository = carRepository;
-        this.carMapper = carMapper;
-    }
-
-    @BeforeEach
-    public void clean() {
-        carRepository.deleteAll();
-    }
 
     @Test
     @DisplayName("Adding a car")
     public void addCarTest() {
-        CarDto carDto = new CarDto(validCarNumber, CarType.PASSENGER_CAR);
+        CarDto carDto = new CarDto(validCarNumber1, CarType.PASSENGER_CAR);
 
         ResponseEntity<Void> responseEntity = restTemplate.postForEntity("/api/cars", carDto, Void.class);
 
@@ -63,7 +31,7 @@ public class CarControllerTest {
 
         Assertions.assertEquals(cars.size(), 1);
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.CREATED);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber);
+        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
         Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
     }
 
@@ -72,7 +40,7 @@ public class CarControllerTest {
     public void addCarWithNotUniqueCarNumberTest() {
         createTestCar();
 
-        CarDto carDto = new CarDto(validCarNumber, CarType.TRUCK);
+        CarDto carDto = new CarDto(validCarNumber1, CarType.TRUCK);
 
         ResponseEntity<Void> responseEntity = restTemplate.postForEntity("/api/cars", carDto, Void.class);
 
@@ -80,7 +48,7 @@ public class CarControllerTest {
 
         Assertions.assertEquals(cars.size(), 1);
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.CONFLICT);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber);
+        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
         Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
         Assertions.assertThrows(EntityExistsException.class, () -> carService.addCar(carDto));
     }
@@ -102,7 +70,7 @@ public class CarControllerTest {
     @Test
     @DisplayName("Adding a car with an empty car type")
     public void addCarWithEmptyCarTypeTest() {
-        CarDto carDto = new CarDto(validCarNumber, null);
+        CarDto carDto = new CarDto(validCarNumber1, null);
 
         ResponseEntity<Void> responseEntity = restTemplate.postForEntity("/api/cars", carDto, Void.class);
 
@@ -116,7 +84,7 @@ public class CarControllerTest {
     @Test
     @DisplayName("Adding a car with an empty car type")
     public void addCarWithDriverIdTest() {
-        CarDto carDto = new CarDto(validCarNumber, CarType.TRUCK, 1L);
+        CarDto carDto = new CarDto(validCarNumber1, CarType.TRUCK, 1L);
 
         ResponseEntity<Void> responseEntity = restTemplate.postForEntity("/api/cars", carDto, Void.class);
 
@@ -140,7 +108,7 @@ public class CarControllerTest {
 
         Assertions.assertEquals(cars.size(), 1);
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber);
+        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
         Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
         Assertions.assertThrows(ValidationException.class, () -> carService.addCar(carDto));
     }
@@ -161,17 +129,21 @@ public class CarControllerTest {
     @Test
     @DisplayName("Deleting a car with wrong id")
     public void deleteCarThatIsNotFoundTest() {
-        Long id = createTestCar().getId();
+        Long wrongCarId = createTestCar().getId() + 1L;
 
-        ResponseEntity<CarDto> responseEntity = restTemplate.exchange("/api/cars/" + id + 1L, HttpMethod.DELETE, null, CarDto.class);
+        ResponseEntity<CarDto> responseEntity = restTemplate.exchange("/api/cars/{1}",
+                HttpMethod.DELETE,
+                null,
+                CarDto.class,
+                wrongCarId);
 
         List<Car> cars = carRepository.findAll();
 
         Assertions.assertEquals(cars.size(), 1);
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber);
+        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
         Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
-        Assertions.assertThrows(EntityNotFoundException.class, () -> carService.deleteCar(id + 1L));
+        Assertions.assertThrows(EntityNotFoundException.class, () -> carService.deleteCar(wrongCarId));
     }
 
     @Test
@@ -179,32 +151,36 @@ public class CarControllerTest {
     public void getCarTest() {
         Long id = createTestCar().getId();
 
-        ResponseEntity<CarDto> responseEntity = restTemplate.getForEntity("/api/cars/" + id, CarDto.class);
+        ResponseEntity<CarDto> responseEntity = restTemplate.getForEntity("/api/cars/{1}",
+                CarDto.class,
+                id);
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.FOUND);
-        Assertions.assertEquals(responseEntity.getBody().getCarNumber(), validCarNumber);
+        Assertions.assertEquals(responseEntity.getBody().getCarNumber(), validCarNumber1);
         Assertions.assertEquals(responseEntity.getBody().getType(), CarType.PASSENGER_CAR);
     }
 
     @Test
     @DisplayName("Getting a car with wrong id")
     public void getCarThatIsNotFoundTest() {
-        Long id = createTestCar().getId();
+        Long wrongCarId = createTestCar().getId() + 1L;
 
-        ResponseEntity<CarDto> responseEntity = restTemplate.getForEntity("/api/cars/" + id + 1L, CarDto.class);
+        ResponseEntity<CarDto> responseEntity = restTemplate.getForEntity("/api/cars/{1}",
+                CarDto.class,
+                wrongCarId);
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
         Assertions.assertNull(responseEntity.getBody().getCarNumber());
         Assertions.assertNull(responseEntity.getBody().getType());
-        Assertions.assertThrows(EntityNotFoundException.class, () -> carService.getCar(id + 1L));
+        Assertions.assertThrows(EntityNotFoundException.class, () -> carService.getCar(wrongCarId));
     }
 
     @Test
     @DisplayName("Getting all cars")
     public void getCarsTest() {
-        CarDto carDto = new CarDto(validCarNumber, CarType.PASSENGER_CAR);
-        CarDto carDto1 = new CarDto(validCarNumber1, CarType.TRUCK);
-        CarDto carDto2 = new CarDto(validCarNumber2, CarType.BUS);
+        CarDto carDto = new CarDto(validCarNumber1, CarType.PASSENGER_CAR);
+        CarDto carDto1 = new CarDto(validCarNumber2, CarType.TRUCK);
+        CarDto carDto2 = new CarDto(validCarNumber3, CarType.BUS);
 
         List<Car> cars = List.of(carMapper.carDtoToCar(carDto), carMapper.carDtoToCar(carDto1), carMapper.carDtoToCar(carDto2));
 
@@ -216,11 +192,11 @@ public class CarControllerTest {
 
         CarDto[] body = responseEntity.getBody();
         Assertions.assertEquals(body.length, 3);
-        Assertions.assertEquals(body[0].getCarNumber(), validCarNumber);
+        Assertions.assertEquals(body[0].getCarNumber(), validCarNumber1);
         Assertions.assertEquals(body[0].getType(), CarType.PASSENGER_CAR);
-        Assertions.assertEquals(body[1].getCarNumber(), validCarNumber1);
+        Assertions.assertEquals(body[1].getCarNumber(), validCarNumber2);
         Assertions.assertEquals(body[1].getType(), CarType.TRUCK);
-        Assertions.assertEquals(body[2].getCarNumber(), validCarNumber2);
+        Assertions.assertEquals(body[2].getCarNumber(), validCarNumber3);
         Assertions.assertEquals(body[2].getType(), CarType.BUS);
     }
 
@@ -228,14 +204,18 @@ public class CarControllerTest {
     @DisplayName("Updating a car")
     public void updateCarTest() {
         Long id = createTestCar().getId();
-        CarDto carDto = new CarDto(validCarNumber1, CarType.TRUCK);
+        CarDto carDto = new CarDto(validCarNumber2, CarType.TRUCK);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/cars/" + id, HttpMethod.PUT, new HttpEntity<>(carDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/cars/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(carDto),
+                Void.class,
+                id);
 
         List<Car> cars = carRepository.findAll();
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
+        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber2);
         Assertions.assertEquals(cars.get(0).getType(), CarType.TRUCK);
         Assertions.assertEquals(cars.size(), 1);
     }
@@ -243,18 +223,22 @@ public class CarControllerTest {
     @Test
     @DisplayName("Updating a car that does not exist")
     public void updateCarThatIsNotFound() {
-        Long id = createTestCar().getId();
-        CarDto carDto = new CarDto(validCarNumber1, CarType.TRUCK);
+        Long wrongCarId = createTestCar().getId() + 1L;
+        CarDto carDto = new CarDto(validCarNumber2, CarType.TRUCK);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/cars/" + id + 1L, HttpMethod.PUT, new HttpEntity<>(carDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/cars/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(carDto),
+                Void.class,
+                wrongCarId);
 
         List<Car> cars = carRepository.findAll();
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber);
+        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
         Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
         Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertThrows(EntityNotFoundException.class, () -> carService.updateCar(id + 1L, carDto));
+        Assertions.assertThrows(EntityNotFoundException.class, () -> carService.updateCar(wrongCarId, carDto));
     }
 
     @Test
@@ -263,12 +247,16 @@ public class CarControllerTest {
         Long id = createTestCar().getId();
         CarDto carDto = new CarDto(notValidCarNumber, CarType.TRUCK);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/cars/" + id, HttpMethod.PUT, new HttpEntity<>(carDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/cars/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(carDto),
+                Void.class,
+                id);
 
         List<Car> cars = carRepository.findAll();
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber);
+        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
         Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
         Assertions.assertEquals(cars.size(), 1);
         Assertions.assertThrows(ValidationException.class, () -> carService.updateCar(id, carDto));
@@ -278,21 +266,25 @@ public class CarControllerTest {
     @DisplayName("Updating a car with driver id")
     public void updateCarWithDriverIdTest() {
         Long id = createTestCar().getId();
-        CarDto carDto = new CarDto(validCarNumber1, CarType.TRUCK, 1L);
+        CarDto carDto = new CarDto(validCarNumber2, CarType.TRUCK, 1L);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/cars/" + id, HttpMethod.PUT, new HttpEntity<>(carDto), Void.class);
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/cars/{1}",
+                HttpMethod.PUT,
+                new HttpEntity<>(carDto),
+                Void.class,
+                id);
 
         List<Car> cars = carRepository.findAll();
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber);
+        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
         Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
         Assertions.assertEquals(cars.size(), 1);
         Assertions.assertThrows(ValidationException.class, () -> carService.updateCar(id, carDto));
     }
 
-    private Car createTestCar() {
-        Car car = new Car(validCarNumber, CarType.PASSENGER_CAR);
+    protected Car createTestCar() {
+        Car car = new Car(validCarNumber1, CarType.PASSENGER_CAR);
         carRepository.save(car);
         return carRepository.findAll().get(0);
     }

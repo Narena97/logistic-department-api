@@ -1,7 +1,6 @@
 package com.example.testtask.controller;
 
 import com.example.testtask.dto.CarDto;
-import com.example.testtask.exception.ValidationException;
 import com.example.testtask.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
