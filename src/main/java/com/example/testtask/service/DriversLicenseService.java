@@ -5,6 +5,7 @@ import com.example.testtask.exception.ValidationException;
 import com.example.testtask.mapper.DriversLicenseMapper;
 import com.example.testtask.repository.DriversLicenseRepository;
 import com.example.testtask.utils.Messages;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class DriversLicenseService {
 
@@ -26,9 +28,11 @@ public class DriversLicenseService {
     }
 
     public List<DriversLicenseDto> getAllLicenses() {
-        return driversLicenseRepository.findAll().stream()
+        List<DriversLicenseDto> licenses = driversLicenseRepository.findAll().stream()
                 .map(driversLicenseMapper::driversLicenseToDriversLicenseDto)
                 .collect(Collectors.toList());
+        log.info("Driver's licenses was found: {}", licenses);
+        return licenses;
     }
 
     public boolean licenseIsValid(DriversLicenseDto driversLicenseDto, boolean isUpdate) {
@@ -50,7 +54,6 @@ public class DriversLicenseService {
         if (driversLicenseDto.getExpirationTime() != null && !driversLicenseDto.getExpirationTime().isAfter(currentDate)) {
             throw new ValidationException(isUpdate ? Messages.UPDATE_DRIVER_LICENSE_EXPIRED : Messages.ADD_DRIVER_LICENSE_EXPIRED);
         }
-
         return true;
     }
 

@@ -13,6 +13,7 @@ import com.example.testtask.mapper.DriverMapper;
 import com.example.testtask.mapper.DriversLicenseMapper;
 import com.example.testtask.repository.DriverRepository;
 import com.example.testtask.utils.Messages;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class DriverService {
 
@@ -48,15 +50,15 @@ public class DriverService {
     }
 
     public DriverDto getDriver(Long id) {
-        Optional<Driver> optionalDriver = driverRepository.findById(id);
-        return optionalDriver.map(driverMapper::driverToDriverDto)
-                .orElseThrow(() -> new EntityNotFoundException(String.format(Messages.GET_DRIVER, id)));
+        Driver driver = driverRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.GET_DRIVER, id)));
+        log.info("Driver with id {} was found: {}", id, driver);
+        return driverMapper.driverToDriverDto(driver);
     }
 
     public List<DriverDto> getDrivers() {
-        return driverRepository.findAll().stream()
-                .map(driverMapper::driverToDriverDto)
-                .collect(Collectors.toList());
+        List<DriverDto> drivers = driverRepository.findAll().stream().map(driverMapper::driverToDriverDto).collect(Collectors.toList());
+        log.info("Drivers was found: {}", drivers);
+        return drivers;
     }
 
     public void addDriver(DriverDto driverDto) {
@@ -68,8 +70,10 @@ public class DriverService {
             if (first.isPresent()) {
                 throw new EntityExistsException(String.format(Messages.ADD_DRIVER, driverDto.getLicense().getDriversLicenseNumber()));
             } else if (driversLicenseService.licenseIsValid(driverDto.getLicense(), false)) {
+                log.info("Driver's license {} is valid", driverDto.getLicense());
                 Driver driver = driverMapper.driverDtoToDriver(driverDto);
                 driverRepository.save(driver);
+                log.info("Driver {} was saved", driver);
             }
         } else {
             throw new ValidationException(Messages.ADD_DRIVER_LICENSE_IS_EMPTY);
@@ -80,8 +84,10 @@ public class DriverService {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.UPDATE_DRIVER, id)));
         if (newDriver.getLicense() != null) {
             if (driversLicenseService.licenseIsValid(newDriver.getLicense(), true)) {
+                log.info("New driver's license {} is valid", newDriver.getLicense());
                 driversLicenseMapper.updateDriversLicenseFromDto(newDriver.getLicense(), driver.getLicense());
                 driverRepository.save(driver);
+                log.info("Driver {} was updated", driver);
             }
         } else {
             throw new ValidationException(Messages.UPDATE_DRIVER_LICENSE_IS_EMPTY);
@@ -91,6 +97,7 @@ public class DriverService {
     public void deleteDriver(Long id) {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.DELETE_DRIVER, id)));
         driverRepository.delete(driver);
+        log.info("Driver {} was deleted", driver);
     }
 
     public void addCarToDriver(Long driverId, Long carId) {
@@ -109,6 +116,7 @@ public class DriverService {
                     if (carDto.getDriverId() == null) {
                         driver.addCar(carMapper.carDtoToCar(carDto));
                         driverRepository.save(driver);
+                        log.info("Car with id {} was added to driver with id {}", carId, driverId);
                     } else {
                         throw new ValidationException(Messages.ADD_CAR_THAT_HAS_DRIVER_TO_ANOTHER_DRIVER);
                     }
@@ -130,6 +138,7 @@ public class DriverService {
         if (first.isPresent()) {
             driver.removeCar(first.get());
             driverRepository.save(driver);
+            log.info("Car with id {} was removed from driver with id {}", carId, driverId);
         } else {
             throw new EntityNotFoundException(String.format(Messages.REMOVE_CAR_THAT_IS_NOT_FOUND_FROM_DRIVER, carId));
         }
