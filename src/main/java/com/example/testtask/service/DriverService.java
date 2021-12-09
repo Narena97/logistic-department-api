@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -103,6 +104,9 @@ public class DriverService {
     public void addCarToDriver(Long driverId, Long carId) {
         Driver driver = driverRepository.findById(driverId).orElseThrow(() ->
                 new EntityNotFoundException(String.format(Messages.ADD_CAR_TO_DRIVER_THAT_NOT_FOUND, driverId)));
+        if (!driver.getLicense().getExpirationTime().isAfter(LocalDate.now())){
+            throw new ValidationException(Messages.ADD_CAR_TO_DRIVER_WITH_EXPIRED_LICENSE);
+        }
         List<Car> cars = driver.getCars();
         CarDto carDto = carService.getCar(carId);
         Optional<Car> first = cars.stream().filter(car -> car.getCarNumber().equals(carDto.getCarNumber())).findFirst();

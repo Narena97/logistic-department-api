@@ -601,6 +601,32 @@ public class DriverControllerTest extends ControllerTest {
     }
 
     @Test
+    @DisplayName("Adding a car to driver with expired license")
+    public void addCarToDriverWithExpiredLicenseTest() {
+        DriversLicense license = new DriversLicense(validDriversLicenseNumber, LicenseCategory.B, notValidExpirationTime);
+        Driver driver = new Driver(license);
+        driverRepository.save(driver);
+
+        Car car = createTestCar();
+
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+                HttpMethod.PUT,
+                null,
+                Void.class,
+                driver.getId(),
+                car.getId());
+
+        List<Driver> drivers = driverRepository.findAll();
+        List<Car> cars = carRepository.findAll();
+
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
+        Assertions.assertEquals(drivers.size(), 1);
+        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Assertions.assertNull(cars.get(0).getDriver());
+    }
+
+    @Test
     @DisplayName("Remove a car from driver")
     public void removeCarFromDriverTest() {
         Driver driver = addTestCarToTestDriver();

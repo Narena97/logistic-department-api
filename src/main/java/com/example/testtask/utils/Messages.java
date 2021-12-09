@@ -33,5 +33,6 @@ public class Messages {
     public static final String ADD_DRIVER_LICENSE_EXPIRED = "Could not add driver: driver's license expired";
     public static final String ADD_CAR_TO_DRIVER_MISMATCH = "Could not add new driver to car: driver's license does not allow driving this car";
     public static final String ADD_CAR_THAT_HAS_DRIVER_TO_ANOTHER_DRIVER = "Could not add new driver to car: this car already has a driver";
+    public static final String ADD_CAR_TO_DRIVER_WITH_EXPIRED_LICENSE = "Could not add new driver to car: driver's license expired";
 
 }
