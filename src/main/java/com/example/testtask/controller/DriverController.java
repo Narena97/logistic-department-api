@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -33,13 +34,13 @@ public class DriverController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void addDriver(@RequestBody DriverDto driver) {
+    public void addDriver(@Valid @RequestBody DriverDto driver) {
         driverService.addDriver(driver);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateDriver(@PathVariable Long id, @RequestBody DriverDto driver) {
+    public void updateDriver(@PathVariable Long id, @Valid @RequestBody DriverDto driver) {
         driverService.updateDriver(id, driver);
     }
 

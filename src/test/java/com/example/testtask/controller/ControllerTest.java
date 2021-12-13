@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.time.LocalDate;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -32,6 +34,8 @@ public class ControllerTest {
     protected static final String validCarNumber2 = "B279EP 44";
     protected static final String validCarNumber3 = "T671MO 99";
     protected static final String validCarNumber4 = "O524EM 54";
+
+    protected final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Autowired
     protected TestRestTemplate restTemplate;

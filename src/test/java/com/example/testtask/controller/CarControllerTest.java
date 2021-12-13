@@ -3,7 +3,7 @@ package com.example.testtask.controller;
 import com.example.testtask.dto.CarDto;
 import com.example.testtask.entity.Car;
 import com.example.testtask.enums.CarType;
-import com.example.testtask.exception.ValidationException;
+import com.example.testtask.utils.Messages;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
+import javax.validation.ConstraintViolation;
 import java.util.List;
+import java.util.Set;
 
 public class CarControllerTest extends ControllerTest {
 
@@ -29,10 +31,13 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.CREATED);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
+        Set<ConstraintViolation<CarDto>> violations = validator.validate(carDto);
+
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber1, cars.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, cars.get(0).getType());
+        Assertions.assertEquals(0, violations.size());
     }
 
     @Test
@@ -46,11 +51,14 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.CONFLICT);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
+        Set<ConstraintViolation<CarDto>> violations = validator.validate(carDto);
+
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber1, cars.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, cars.get(0).getType());
         Assertions.assertThrows(EntityExistsException.class, () -> carService.addCar(carDto));
+        Assertions.assertEquals(0, violations.size());
     }
 
     @Test
@@ -62,9 +70,12 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(cars.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> carService.addCar(carDto));
+        Set<ConstraintViolation<CarDto>> violation = validator.validate(carDto);
+
+        Assertions.assertEquals(0, cars.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, violation.size());
+        Assertions.assertEquals(Messages.CAR_NUMBER_IS_EMPTY, violation.iterator().next().getMessage());
     }
 
     @Test
@@ -76,9 +87,12 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(cars.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> carService.addCar(carDto));
+        Set<ConstraintViolation<CarDto>> violation = validator.validate(carDto);
+
+        Assertions.assertEquals(0, cars.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, violation.size());
+        Assertions.assertEquals(Messages.CAR_TYPE_IS_EMPTY, violation.iterator().next().getMessage());
     }
 
     @Test
@@ -90,9 +104,12 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(cars.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> carService.addCar(carDto));
+        Set<ConstraintViolation<CarDto>> violation = validator.validate(carDto);
+
+        Assertions.assertEquals(0, cars.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, violation.size());
+        Assertions.assertEquals(Messages.CAR_DRIVER_ID_IS_PRESENT, violation.iterator().next().getMessage());
     }
 
     @Test
@@ -106,11 +123,14 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
-        Assertions.assertThrows(ValidationException.class, () -> carService.addCar(carDto));
+        Set<ConstraintViolation<CarDto>> violation = validator.validate(carDto);
+
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber1, cars.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, cars.get(0).getType());
+        Assertions.assertEquals(1, violation.size());
+        Assertions.assertEquals(Messages.CAR_NUMBER_IS_NOT_VALID, violation.iterator().next().getMessage());
     }
 
     @Test
@@ -122,8 +142,8 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(cars.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
+        Assertions.assertEquals(0, cars.size());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
@@ -139,10 +159,10 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber1, cars.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, cars.get(0).getType());
         Assertions.assertThrows(EntityNotFoundException.class, () -> carService.deleteCar(wrongCarId));
     }
 
@@ -155,9 +175,9 @@ public class CarControllerTest extends ControllerTest {
                 CarDto.class,
                 id);
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.FOUND);
-        Assertions.assertEquals(responseEntity.getBody().getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(responseEntity.getBody().getType(), CarType.PASSENGER_CAR);
+        Assertions.assertEquals(HttpStatus.FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber1, responseEntity.getBody().getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, responseEntity.getBody().getType());
     }
 
     @Test
@@ -169,7 +189,7 @@ public class CarControllerTest extends ControllerTest {
                 CarDto.class,
                 wrongCarId);
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
         Assertions.assertNull(responseEntity.getBody().getCarNumber());
         Assertions.assertNull(responseEntity.getBody().getType());
         Assertions.assertThrows(EntityNotFoundException.class, () -> carService.getCar(wrongCarId));
@@ -191,13 +211,13 @@ public class CarControllerTest extends ControllerTest {
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.FOUND);
 
         CarDto[] body = responseEntity.getBody();
-        Assertions.assertEquals(body.length, 3);
-        Assertions.assertEquals(body[0].getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(body[0].getType(), CarType.PASSENGER_CAR);
-        Assertions.assertEquals(body[1].getCarNumber(), validCarNumber2);
-        Assertions.assertEquals(body[1].getType(), CarType.TRUCK);
-        Assertions.assertEquals(body[2].getCarNumber(), validCarNumber3);
-        Assertions.assertEquals(body[2].getType(), CarType.BUS);
+        Assertions.assertEquals(3, body.length);
+        Assertions.assertEquals(validCarNumber1, body[0].getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, body[0].getType());
+        Assertions.assertEquals(validCarNumber2, body[1].getCarNumber());
+        Assertions.assertEquals(CarType.TRUCK, body[1].getType());
+        Assertions.assertEquals(validCarNumber3, body[2].getCarNumber());
+        Assertions.assertEquals(CarType.BUS, body[2].getType());
     }
 
     @Test
@@ -214,10 +234,13 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber2);
-        Assertions.assertEquals(cars.get(0).getType(), CarType.TRUCK);
-        Assertions.assertEquals(cars.size(), 1);
+        Set<ConstraintViolation<CarDto>> violation = validator.validate(carDto);
+
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber2, cars.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.TRUCK, cars.get(0).getType());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(0, violation.size());
     }
 
     @Test
@@ -234,10 +257,10 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
-        Assertions.assertEquals(cars.size(), 1);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber1, cars.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, cars.get(0).getType());
+        Assertions.assertEquals(1, cars.size());
         Assertions.assertThrows(EntityNotFoundException.class, () -> carService.updateCar(wrongCarId, carDto));
     }
 
@@ -255,11 +278,14 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertThrows(ValidationException.class, () -> carService.updateCar(id, carDto));
+        Set<ConstraintViolation<CarDto>> violation = validator.validate(carDto);
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber1, cars.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, cars.get(0).getType());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(1, violation.size());
+        Assertions.assertEquals(Messages.CAR_NUMBER_IS_NOT_VALID, violation.iterator().next().getMessage());
     }
 
     @Test
@@ -276,11 +302,14 @@ public class CarControllerTest extends ControllerTest {
 
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(cars.get(0).getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(cars.get(0).getType(), CarType.PASSENGER_CAR);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertThrows(ValidationException.class, () -> carService.updateCar(id, carDto));
+        Set<ConstraintViolation<CarDto>> violation = validator.validate(carDto);
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(validCarNumber1, cars.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, cars.get(0).getType());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(1, violation.size());
+        Assertions.assertEquals(Messages.CAR_DRIVER_ID_IS_PRESENT, violation.iterator().next().getMessage());
     }
 
     protected Car createTestCar() {

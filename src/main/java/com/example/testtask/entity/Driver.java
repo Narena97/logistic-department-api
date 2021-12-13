@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,6 @@ public class Driver {
     @JoinColumn(name = "drivers_license_id")
     private DriversLicense license;
 
-    @Size(max = 3)
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "driver", cascade = CascadeType.ALL)
     private List<Car> cars = new ArrayList<>();
 

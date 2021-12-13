@@ -7,7 +7,7 @@ import com.example.testtask.entity.Driver;
 import com.example.testtask.entity.DriversLicense;
 import com.example.testtask.enums.CarType;
 import com.example.testtask.enums.LicenseCategory;
-import com.example.testtask.exception.ValidationException;
+import com.example.testtask.utils.Messages;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,14 +18,16 @@ import org.springframework.http.ResponseEntity;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityNotFoundException;
+import javax.validation.ConstraintViolation;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class DriverControllerTest extends ControllerTest {
 
     public static final Long validDriversLicenseNumber2 = 9745213056L;
-    public static final Long notValidDriversLicenseNumber = 98765432101234569L;
+    public static final Long notValidDriversLicenseNumber = 91111111111L;
 
     public static final LocalDate validExpirationTime2 = LocalDate.of(2028, 9, 15);
     public static final LocalDate notValidExpirationTime = LocalDate.of(2015, 12, 25);
@@ -41,13 +43,16 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.CREATED);
-        Assertions.assertEquals(drivers.get(0).getLicense().getId(), licenses.get(0).getId());
-        Assertions.assertEquals(licenses.get(0).getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(licenses.get(0).getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(licenses.get(0).getExpirationTime(), validExpirationTime);
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, licenses.size());
+        Assertions.assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
+        Assertions.assertEquals(licenses.get(0).getId(), drivers.get(0).getLicense().getId());
+        Assertions.assertEquals(validDriversLicenseNumber,  licenses.get(0).getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, licenses.get(0).getCategory());
+        Assertions.assertEquals(validExpirationTime, licenses.get(0).getExpirationTime());
+        Assertions.assertEquals(0, driverViolations.size());
     }
 
     @Test
@@ -63,13 +68,16 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.CONFLICT);
-        Assertions.assertEquals(licenses.get(0).getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(licenses.get(0).getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(licenses.get(0).getExpirationTime(), validExpirationTime);
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, licenses.size());
+        Assertions.assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
+        Assertions.assertEquals(validDriversLicenseNumber, licenses.get(0).getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, licenses.get(0).getCategory());
+        Assertions.assertEquals(validExpirationTime, licenses.get(0).getExpirationTime());
         Assertions.assertThrows(EntityExistsException.class, () -> driverService.addDriver(driverDto));
+        Assertions.assertEquals(0, driverViolations.size());
     }
 
     @Test
@@ -82,10 +90,13 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 0);
-        Assertions.assertEquals(licenses.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.addDriver(driverDto));
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(0, drivers.size());
+        Assertions.assertEquals(0, licenses.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVER_LICENSE_IS_EMPTY, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -99,10 +110,13 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 0);
-        Assertions.assertEquals(licenses.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.addDriver(driverDto));
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(0, drivers.size());
+        Assertions.assertEquals(0, licenses.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVERS_LICENSE_EXPIRED, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -116,10 +130,13 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 0);
-        Assertions.assertEquals(licenses.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.addDriver(driverDto));
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(0, drivers.size());
+        Assertions.assertEquals(0, licenses.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVERS_LICENSE_NUMBER_IS_NOT_VALID, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -133,14 +150,17 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 0);
-        Assertions.assertEquals(licenses.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.addDriver(driverDto));
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(0, drivers.size());
+        Assertions.assertEquals(0, licenses.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVERS_LICENSE_CATEGORY_IS_EMPTY, driverViolations.iterator().next().getMessage());
     }
 
     @Test
-    @DisplayName("Adding a driver without category of license")
+    @DisplayName("Adding a driver without expiration time of license")
     public void addDriverWithoutExpirationTimeOfLicenseTest() {
         DriversLicenseDto licenseDto = new DriversLicenseDto(validDriversLicenseNumber, LicenseCategory.C, null);
         DriverDto driverDto = new DriverDto(licenseDto);
@@ -150,10 +170,13 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 0);
-        Assertions.assertEquals(licenses.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.addDriver(driverDto));
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(0, drivers.size());
+        Assertions.assertEquals(0, licenses.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVERS_LICENSE_EXPIRATION_TIME_IS_EMPTY, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -167,10 +190,13 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 0);
-        Assertions.assertEquals(licenses.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.addDriver(driverDto));
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(0, drivers.size());
+        Assertions.assertEquals(0, licenses.size());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVERS_LICENSE_NUMBER_IS_EMPTY, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -190,12 +216,15 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-        Assertions.assertEquals(drivers.get(0).getLicense().getDriversLicenseNumber(), validDriversLicenseNumber1);
-        Assertions.assertEquals(drivers.get(0).getLicense().getCategory(), LicenseCategory.C);
-        Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime1);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertEquals(validDriversLicenseNumber1, drivers.get(0).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.C, drivers.get(0).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime1, drivers.get(0).getLicense().getExpirationTime());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, licenses.size());
+        Assertions.assertEquals(0, driverViolations.size());
     }
 
     @Test
@@ -215,13 +244,16 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(drivers.get(0).getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(drivers.get(0).getLicense().getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(validDriversLicenseNumber, drivers.get(0).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, drivers.get(0).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, drivers.get(0).getLicense().getExpirationTime());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, licenses.size());
         Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.updateDriver(wrongDriverId, driverDto));
+        Assertions.assertEquals(0, driverViolations.size());
     }
 
     @Test
@@ -240,13 +272,16 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(drivers.get(0).getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(drivers.get(0).getLicense().getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.updateDriver(id, driverDto));
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(validDriversLicenseNumber, drivers.get(0).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, drivers.get(0).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, drivers.get(0).getLicense().getExpirationTime());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, licenses.size());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVER_LICENSE_IS_EMPTY, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -266,13 +301,16 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(drivers.get(0).getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(drivers.get(0).getLicense().getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.updateDriver(id, driverDto));
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(validDriversLicenseNumber, drivers.get(0).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, drivers.get(0).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, drivers.get(0).getLicense().getExpirationTime());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, licenses.size());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVERS_LICENSE_NUMBER_IS_NOT_VALID, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -292,38 +330,16 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(drivers.get(0).getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(drivers.get(0).getLicense().getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
-        Assertions.assertThrows(ValidationException.class, () -> driverService.updateDriver(id, driverDto));
-    }
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverDto);
 
-    @Test
-    @DisplayName("Updating a driver without driver's license number")
-    public void updateDriverWithoutLicenseNumberTest() {
-        Long id = createTestDriver().getId();
-
-        DriversLicenseDto licenseDto = new DriversLicenseDto(null, LicenseCategory.C, validExpirationTime1);
-        DriverDto driverDto = new DriverDto(licenseDto);
-
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}",
-                HttpMethod.PUT,
-                new HttpEntity<>(driverDto),
-                Void.class,
-                id);
-
-        List<Driver> drivers = driverRepository.findAll();
-        List<DriversLicense> licenses = driversLicenseRepository.findAll();
-
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-        Assertions.assertEquals(drivers.get(0).getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(drivers.get(0).getLicense().getCategory(), LicenseCategory.C);
-        Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime1);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(validDriversLicenseNumber, drivers.get(0).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, drivers.get(0).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, drivers.get(0).getLicense().getExpirationTime());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, licenses.size());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVERS_LICENSE_EXPIRED, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -340,10 +356,9 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 0);
-        Assertions.assertEquals(licenses.size(), 0);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-
+        Assertions.assertEquals(0, drivers.size());
+        Assertions.assertEquals(0, licenses.size());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
@@ -360,12 +375,12 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<DriversLicense> licenses = driversLicenseRepository.findAll();
 
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(licenses.size(), 1);
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(drivers.get(0).getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(drivers.get(0).getLicense().getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(drivers.get(0).getLicense().getExpirationTime(), validExpirationTime);
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, licenses.size());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(validDriversLicenseNumber, drivers.get(0).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, drivers.get(0).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, drivers.get(0).getLicense().getExpirationTime());
         Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.deleteDriver(wrongDriverId));
     }
 
@@ -378,10 +393,10 @@ public class DriverControllerTest extends ControllerTest {
                 DriverDto.class,
                 id);
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.FOUND);
-        Assertions.assertEquals(responseEntity.getBody().getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(responseEntity.getBody().getLicense().getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(responseEntity.getBody().getLicense().getExpirationTime(), validExpirationTime);
+        Assertions.assertEquals(HttpStatus.FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(validDriversLicenseNumber, responseEntity.getBody().getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, responseEntity.getBody().getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, responseEntity.getBody().getLicense().getExpirationTime());
     }
 
     @Test
@@ -393,7 +408,7 @@ public class DriverControllerTest extends ControllerTest {
                 DriverDto.class,
                 wrongDriverId);
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
         Assertions.assertNull(responseEntity.getBody().getLicense());
         Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.getDriver(wrongDriverId));
     }
@@ -421,16 +436,16 @@ public class DriverControllerTest extends ControllerTest {
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.FOUND);
 
         DriverDto[] body = responseEntity.getBody();
-        Assertions.assertEquals(body.length, 3);
-        Assertions.assertEquals(body[0].getLicense().getDriversLicenseNumber(), validDriversLicenseNumber);
-        Assertions.assertEquals(body[0].getLicense().getCategory(), LicenseCategory.B);
-        Assertions.assertEquals(body[0].getLicense().getExpirationTime(), validExpirationTime);
-        Assertions.assertEquals(body[1].getLicense().getDriversLicenseNumber(), validDriversLicenseNumber1);
-        Assertions.assertEquals(body[1].getLicense().getCategory(), LicenseCategory.C);
-        Assertions.assertEquals(body[1].getLicense().getExpirationTime(), validExpirationTime1);
-        Assertions.assertEquals(body[2].getLicense().getDriversLicenseNumber(), validDriversLicenseNumber2);
-        Assertions.assertEquals(body[2].getLicense().getCategory(), LicenseCategory.D);
-        Assertions.assertEquals(body[2].getLicense().getExpirationTime(), validExpirationTime2);
+        Assertions.assertEquals(3, body.length);
+        Assertions.assertEquals(validDriversLicenseNumber, body[0].getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, body[0].getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, body[0].getLicense().getExpirationTime());
+        Assertions.assertEquals(validDriversLicenseNumber1, body[1].getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.C, body[1].getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime1, body[1].getLicense().getExpirationTime());
+        Assertions.assertEquals(validDriversLicenseNumber2, body[2].getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.D, body[2].getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime2, body[2].getLicense().getExpirationTime());
     }
 
     @Test
@@ -449,14 +464,14 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().get(0).getCarNumber(), validCarNumber1);
-        Assertions.assertEquals(drivers.get(0).getCars().get(0).getType(), CarType.PASSENGER_CAR);
-        Assertions.assertEquals(drivers.get(0).getCars().get(0).getDriver().getId(), driverId);
-        Assertions.assertEquals(cars.get(0).getDriver().getId(), driverId);
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(1, drivers.get(0).getCars().size());
+        Assertions.assertEquals(validCarNumber1, drivers.get(0).getCars().get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, drivers.get(0).getCars().get(0).getType());
+        Assertions.assertEquals(driverId, drivers.get(0).getCars().get(0).getDriver().getId());
+        Assertions.assertEquals(driverId, cars.get(0).getDriver().getId());
     }
 
     @Test
@@ -475,10 +490,10 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(0, drivers.get(0).getCars().size());
         Assertions.assertNull(cars.get(0).getDriver());
     }
 
@@ -498,10 +513,10 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(0, drivers.get(0).getCars().size());
         Assertions.assertNull(cars.get(0).getDriver());
     }
 
@@ -520,17 +535,16 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(1, drivers.get(0).getCars().size());
     }
 
     @Test
     @DisplayName("Adding a car that already has driver to another driver")
     public void addCarWithDriverToAnotherDriverTest() {
         Driver driver = addTestCarToTestDriver();
-
         Driver newDriver = createTestDriver1();
 
         ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
@@ -543,11 +557,11 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(drivers.size(), 2);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
-        Assertions.assertEquals(drivers.get(1).getCars().size(), 0);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(2, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(1, drivers.get(0).getCars().size());
+        Assertions.assertEquals(0, drivers.get(1).getCars().size());
     }
 
     @Test
@@ -566,10 +580,10 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(0, drivers.get(0).getCars().size());
     }
 
     @Test
@@ -594,10 +608,10 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 4);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 3);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(4, cars.size());
+        Assertions.assertEquals(3, drivers.get(0).getCars().size());
     }
 
     @Test
@@ -619,11 +633,15 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.BAD_REQUEST);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Set<ConstraintViolation<DriverDto>> driverViolations = validator.validate(driverMapper.driverToDriverDto(driver));
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(0, drivers.get(0).getCars().size());
         Assertions.assertNull(cars.get(0).getDriver());
+        Assertions.assertEquals(1, driverViolations.size());
+        Assertions.assertEquals(Messages.DRIVERS_LICENSE_EXPIRED, driverViolations.iterator().next().getMessage());
     }
 
     @Test
@@ -641,10 +659,10 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 0);
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(0, drivers.get(0).getCars().size());
         Assertions.assertNull(cars.get(0).getDriver());
     }
 
@@ -664,11 +682,11 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
-        Assertions.assertEquals(cars.get(0).getDriver().getId(), driver.getId());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(1, drivers.get(0).getCars().size());
+        Assertions.assertEquals(driver.getId(), cars.get(0).getDriver().getId());
     }
 
     @Test
@@ -687,11 +705,11 @@ public class DriverControllerTest extends ControllerTest {
         List<Driver> drivers = driverRepository.findAll();
         List<Car> cars = carRepository.findAll();
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.NOT_FOUND);
-        Assertions.assertEquals(drivers.size(), 1);
-        Assertions.assertEquals(cars.size(), 1);
-        Assertions.assertEquals(drivers.get(0).getCars().size(), 1);
-        Assertions.assertEquals(cars.get(0).getDriver().getId(), driver.getId());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals(1, cars.size());
+        Assertions.assertEquals(1, drivers.get(0).getCars().size());
+        Assertions.assertEquals(driver.getId(), cars.get(0).getDriver().getId());
     }
 
     private Driver addTestCarToTestDriver() {

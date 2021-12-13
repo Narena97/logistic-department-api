@@ -58,41 +58,28 @@ public class DriverService {
 
     public List<DriverDto> getDrivers() {
         List<DriverDto> drivers = driverRepository.findAll().stream().map(driverMapper::driverToDriverDto).collect(Collectors.toList());
-        log.info("Drivers was found: {}", drivers);
+        log.info("Drivers were found: {}", drivers);
         return drivers;
     }
 
     public void addDriver(DriverDto driverDto) {
-        if (driverDto.getLicense() != null) {
-            List<DriversLicenseDto> driversLicensesDto = driversLicenseService.getAllLicenses();
-            Optional<DriversLicenseDto> first = driversLicensesDto.stream()
-                    .filter(license -> license.getDriversLicenseNumber().equals(driverDto.getLicense().getDriversLicenseNumber())).findFirst();
+        List<DriversLicenseDto> driversLicensesDto = driversLicenseService.getAllLicenses();
+        Optional<DriversLicenseDto> first = driversLicensesDto.stream()
+                .filter(license -> license.getDriversLicenseNumber().equals(driverDto.getLicense().getDriversLicenseNumber())).findFirst();
 
-            if (first.isPresent()) {
-                throw new EntityExistsException(String.format(Messages.ADD_DRIVER, driverDto.getLicense().getDriversLicenseNumber()));
-            } else if (driversLicenseService.licenseIsValid(driverDto.getLicense(), false)) {
-                log.info("Driver's license {} is valid", driverDto.getLicense());
-                Driver driver = driverMapper.driverDtoToDriver(driverDto);
-                driverRepository.save(driver);
-                log.info("Driver {} was saved", driver);
-            }
-        } else {
-            throw new ValidationException(Messages.ADD_DRIVER_LICENSE_IS_EMPTY);
+        if (first.isPresent()) {
+            throw new EntityExistsException(String.format(Messages.ADD_DRIVER, driverDto.getLicense().getDriversLicenseNumber()));
         }
+        Driver driver = driverMapper.driverDtoToDriver(driverDto);
+        driverRepository.save(driver);
+        log.info("Driver {} was saved", driver);
     }
 
     public void updateDriver(Long id, DriverDto newDriver) {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.UPDATE_DRIVER, id)));
-        if (newDriver.getLicense() != null) {
-            if (driversLicenseService.licenseIsValid(newDriver.getLicense(), true)) {
-                log.info("New driver's license {} is valid", newDriver.getLicense());
-                driversLicenseMapper.updateDriversLicenseFromDto(newDriver.getLicense(), driver.getLicense());
-                driverRepository.save(driver);
-                log.info("Driver {} was updated", driver);
-            }
-        } else {
-            throw new ValidationException(Messages.UPDATE_DRIVER_LICENSE_IS_EMPTY);
-        }
+        driversLicenseMapper.updateDriversLicenseFromDto(newDriver.getLicense(), driver.getLicense());
+        driverRepository.save(driver);
+        log.info("Driver {} was updated", driver);
     }
 
     public void deleteDriver(Long id) {

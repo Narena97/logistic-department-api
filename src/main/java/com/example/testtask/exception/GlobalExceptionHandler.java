@@ -2,6 +2,7 @@ package com.example.testtask.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -37,8 +38,19 @@ public class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ExceptionResponse argumentIsNotValid(MethodArgumentNotValidException exception) {
+        ExceptionResponse response = new ExceptionResponse();
+        response.setErrorCode("400 Bad Request");
+        response.setErrorMessage(exception.getBindingResult().getFieldErrors().get(0).getDefaultMessage());
+        response.setTimestamp(Calendar.getInstance(TimeZone.getTimeZone("Europe/Moscow")).getTime());
+
+        return response;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ValidationException.class)
-    public ExceptionResponse inputIsNotValid(ValidationException exception) {
+    public ExceptionResponse argumentExists(ValidationException exception) {
         ExceptionResponse response = new ExceptionResponse();
         response.setErrorCode("400 Bad Request");
         response.setErrorMessage(exception.getMessage());

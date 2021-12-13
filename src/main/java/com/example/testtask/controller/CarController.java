@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -33,13 +34,13 @@ public class CarController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void addCar(@RequestBody CarDto carDto) {
+    public void addCar(@Valid @RequestBody CarDto carDto) {
         carService.addCar(carDto);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateCar(@PathVariable Long id, @RequestBody CarDto car) {
+    public void updateCar(@PathVariable Long id, @Valid @RequestBody CarDto car) {
         carService.updateCar(id, car);
     }
 
