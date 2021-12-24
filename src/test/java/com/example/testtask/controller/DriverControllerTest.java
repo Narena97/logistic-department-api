@@ -454,7 +454,7 @@ public class DriverControllerTest extends ControllerTest {
         Long driverId = createTestDriver().getId();
         Long carId = createTestCar().getId();
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/addCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -480,7 +480,7 @@ public class DriverControllerTest extends ControllerTest {
         Long wrongDriverId = createTestDriver().getId() + 1L;
         Long carId = createTestCar().getId();
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/addCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -503,7 +503,7 @@ public class DriverControllerTest extends ControllerTest {
         Long driverId = createTestDriver().getId();
         Long wrongCarId = createTestCar().getId() + 1L;
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/addCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -525,7 +525,7 @@ public class DriverControllerTest extends ControllerTest {
     public void addDuplicateCarToDriverTest() {
         Driver driver = addTestCarToTestDriver();
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/addCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -547,7 +547,7 @@ public class DriverControllerTest extends ControllerTest {
         Driver driver = addTestCarToTestDriver();
         Driver newDriver = createTestDriver1();
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/addCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -570,7 +570,7 @@ public class DriverControllerTest extends ControllerTest {
         Driver driver = createTestDriver();
         Car car = createTestCar1();
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/addCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -598,7 +598,7 @@ public class DriverControllerTest extends ControllerTest {
         driver.addCars(Arrays.asList(car1, car2, car3));
         driverRepository.save(driver);
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/addCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -623,7 +623,7 @@ public class DriverControllerTest extends ControllerTest {
 
         Car car = createTestCar();
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/addCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/addCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -649,7 +649,7 @@ public class DriverControllerTest extends ControllerTest {
     public void removeCarFromDriverTest() {
         Driver driver = addTestCarToTestDriver();
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/removeCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/removeCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -672,7 +672,7 @@ public class DriverControllerTest extends ControllerTest {
         Driver driver = addTestCarToTestDriver();
         Long wrongCarId = driver.getCars().get(0).getId() + 1L;
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/removeCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/removeCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,
@@ -695,7 +695,7 @@ public class DriverControllerTest extends ControllerTest {
         Driver driver = addTestCarToTestDriver();
         Long wrongDriverId = driver.getId() + 1L;
 
-        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/removeCar/{1}?carId={2}",
+        ResponseEntity<Void> responseEntity = restTemplate.exchange("/api/drivers/{1}/removeCar?carId={2}",
                 HttpMethod.PUT,
                 null,
                 Void.class,

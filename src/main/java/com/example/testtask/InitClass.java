@@ -24,7 +24,7 @@ public class InitClass implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        driverRepository.deleteAll();
+        /*driverRepository.deleteAll();
         driversLicenseRepository.deleteAll();
         carRepository.deleteAll();
 
@@ -55,7 +55,7 @@ public class InitClass implements CommandLineRunner {
         driver.addCar(car1);
         driver.addCar(car2);
 
-        driverRepository.saveAndFlush(driver);
+        driverRepository.saveAndFlush(driver);*/
 
     }
 }

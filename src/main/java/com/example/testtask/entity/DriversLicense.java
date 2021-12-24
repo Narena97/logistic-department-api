@@ -24,10 +24,10 @@ public class DriversLicense {
     private Long driversLicenseNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "category", nullable = false)
     private LicenseCategory category;
 
-    @Column(nullable = false)
+    @Column(name = "expiration_time", nullable = false)
     private LocalDate expirationTime;
 
     public DriversLicense(Long driversLicenseNumber,
