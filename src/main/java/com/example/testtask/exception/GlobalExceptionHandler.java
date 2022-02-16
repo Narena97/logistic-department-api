@@ -42,7 +42,9 @@ public class GlobalExceptionHandler {
     public ExceptionResponse argumentIsNotValid(MethodArgumentNotValidException exception) {
         ExceptionResponse response = new ExceptionResponse();
         response.setErrorCode("400 Bad Request");
-        response.setErrorMessage(exception.getBindingResult().getFieldErrors().get(0).getDefaultMessage());
+        response.setErrorMessage(exception.getBindingResult().getFieldErrors().get(0) != null ?
+                exception.getBindingResult().getFieldErrors().get(0).getDefaultMessage() :
+                "");
         response.setTimestamp(Calendar.getInstance(TimeZone.getTimeZone("Europe/Moscow")).getTime());
 
         return response;

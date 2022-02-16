@@ -1,13 +1,12 @@
 package com.example.testtask.entity;
 
 import com.example.testtask.enums.CarType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "car")
 @AllArgsConstructor
@@ -16,7 +15,7 @@ public class Car {
 
     @Id
     @Column(name = "car_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "car_number", unique = true, nullable = false)

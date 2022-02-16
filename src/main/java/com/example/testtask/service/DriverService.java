@@ -13,8 +13,8 @@ import com.example.testtask.mapper.DriverMapper;
 import com.example.testtask.mapper.DriversLicenseMapper;
 import com.example.testtask.repository.DriverRepository;
 import com.example.testtask.utils.Messages;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class DriverService {
 
     private final DriverRepository driverRepository;
@@ -35,30 +36,15 @@ public class DriverService {
     private final DriversLicenseMapper driversLicenseMapper;
     private final CarMapper carMapper;
 
-    @Autowired
-    public DriverService(DriverRepository driverRepository,
-                         DriversLicenseService driversLicenseService,
-                         CarService carService,
-                         DriverMapper driverMapper,
-                         DriversLicenseMapper driversLicenseMapper,
-                         CarMapper carMapper) {
-        this.driverRepository = driverRepository;
-        this.driversLicenseService = driversLicenseService;
-        this.carService = carService;
-        this.driverMapper = driverMapper;
-        this.driversLicenseMapper = driversLicenseMapper;
-        this.carMapper = carMapper;
-    }
-
     public DriverDto getDriver(Long id) {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.GET_DRIVER, id)));
-        log.info("Driver with id {} was found: {}", id, driver);
+        log.info("Driver with id {} was found", id);
         return driverMapper.driverToDriverDto(driver);
     }
 
     public List<DriverDto> getDrivers() {
         List<DriverDto> drivers = driverRepository.findAll().stream().map(driverMapper::driverToDriverDto).collect(Collectors.toList());
-        log.info("Drivers were found: {}", drivers);
+        log.info("Drivers with ids {} were found", drivers.stream().map(DriverDto::getId).collect(Collectors.toList()));
         return drivers;
     }
 
@@ -72,22 +58,30 @@ public class DriverService {
         }
         Driver driver = driverMapper.driverDtoToDriver(driverDto);
         driverRepository.save(driver);
-        log.info("Driver {} was saved", driver);
+        log.info("Driver with id {} was saved", driver.getId());
     }
 
     public void updateDriver(Long id, DriverDto newDriver) {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.UPDATE_DRIVER, id)));
         driversLicenseMapper.updateDriversLicenseFromDto(newDriver.getLicense(), driver.getLicense());
         driverRepository.save(driver);
-        log.info("Driver {} was updated", driver);
+        log.info("Driver with id {} was updated", driver.getId());
     }
 
     public void deleteDriver(Long id) {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.DELETE_DRIVER, id)));
         driverRepository.delete(driver);
-        log.info("Driver {} was deleted", driver);
+        log.info("Driver with id {} was deleted", id);
     }
 
+    /**
+     * Метод добавляет водителю автомобиль. Происходит проверка валидности водительских прав, проверяется
+     * наличие данного автомобиля у водителя, проверяется количество закреплённых автомобилей за водителем
+     * (их количество должно быть не больше 3), проверяется соответствие категории водительских прав данного
+     * водителя и типа добавляемого автомобиля, проверяется отсутствие водителя у данного автомобиля.
+     * @param driverId - id водителя, которому будет добавлен автомобиль
+     * @param carId - id автомобиля, который будет добавлен водителю
+     */
     public void addCarToDriver(Long driverId, Long carId) {
         Driver driver = driverRepository.findById(driverId).orElseThrow(() ->
                 new EntityNotFoundException(String.format(Messages.ADD_CAR_TO_DRIVER_THAT_NOT_FOUND, driverId)));

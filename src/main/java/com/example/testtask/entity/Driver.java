@@ -9,17 +9,17 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "driver")
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 public class Driver {
 
     @Id
     @Column(name = "driver_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(optional = false, fetch = FetchType.EAGER, cascade = CascadeType.ALL)

@@ -1,12 +1,13 @@
 package com.example.testtask.service;
 
 import com.example.testtask.dto.CarDto;
+import com.example.testtask.dto.DriversLicenseDto;
 import com.example.testtask.entity.Car;
 import com.example.testtask.mapper.CarMapper;
 import com.example.testtask.repository.CarRepository;
 import com.example.testtask.utils.Messages;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityExistsException;
@@ -17,27 +18,21 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CarService {
 
     private final CarRepository carRepository;
     private final CarMapper carMapper;
 
-    @Autowired
-    public CarService(CarRepository carRepository,
-                      CarMapper carMapper) {
-        this.carRepository = carRepository;
-        this.carMapper = carMapper;
-    }
-
     public CarDto getCar(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.GET_CAR, id)));
-        log.info("Car with id {} was found: {}", id, car);
+        log.info("Car with id {} was found", id);
         return carMapper.carToCarDto(car);
     }
 
     public List<CarDto> getCars() {
         List<CarDto> cars = carRepository.findAll().stream().map(carMapper::carToCarDto).collect(Collectors.toList());
-        log.info("Cars were found: {}", cars);
+        log.info("Cars were found: {}", cars.stream().map(CarDto::getId).collect(Collectors.toList()));
         return cars;
     }
 
@@ -50,7 +45,7 @@ public class CarService {
         } else {
             Car car = carMapper.carDtoToCar(carDto);
             carRepository.save(car);
-            log.info("Car {} was saved", car);
+            log.info("Car with id {} was saved", car.getId());
         }
     }
 
@@ -59,13 +54,13 @@ public class CarService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format(Messages.UPDATE_CAR, id)));
         carMapper.updateCarFromDto(newCar, car);
         carRepository.save(car);
-        log.info("Car {} was updated", car);
+        log.info("Car with id {} was updated", car.getId());
     }
 
     public void deleteCar(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.DELETE_CAR, id)));
         carRepository.delete(car);
-        log.info("Car {} was deleted", car);
+        log.info("Car with id {} was deleted", id);
     }
 
 }

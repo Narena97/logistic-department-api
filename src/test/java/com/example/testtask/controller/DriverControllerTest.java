@@ -1,5 +1,6 @@
 package com.example.testtask.controller;
 
+import com.example.testtask.dto.CarDto;
 import com.example.testtask.dto.DriverDto;
 import com.example.testtask.dto.DriversLicenseDto;
 import com.example.testtask.entity.Car;
@@ -11,6 +12,7 @@ import com.example.testtask.utils.Messages;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -393,7 +395,7 @@ public class DriverControllerTest extends ControllerTest {
                 DriverDto.class,
                 id);
 
-        Assertions.assertEquals(HttpStatus.FOUND, responseEntity.getStatusCode());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Assertions.assertEquals(validDriversLicenseNumber, responseEntity.getBody().getLicense().getDriversLicenseNumber());
         Assertions.assertEquals(LicenseCategory.B, responseEntity.getBody().getLicense().getCategory());
         Assertions.assertEquals(validExpirationTime, responseEntity.getBody().getLicense().getExpirationTime());
@@ -431,21 +433,23 @@ public class DriverControllerTest extends ControllerTest {
 
         driverRepository.saveAll(cars);
 
-        ResponseEntity<DriverDto[]> responseEntity = restTemplate.getForEntity("/api/drivers", DriverDto[].class);
+        ResponseEntity<List<DriverDto>> responseEntity = restTemplate.exchange("/api/drivers", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.FOUND);
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
 
-        DriverDto[] body = responseEntity.getBody();
-        Assertions.assertEquals(3, body.length);
-        Assertions.assertEquals(validDriversLicenseNumber, body[0].getLicense().getDriversLicenseNumber());
-        Assertions.assertEquals(LicenseCategory.B, body[0].getLicense().getCategory());
-        Assertions.assertEquals(validExpirationTime, body[0].getLicense().getExpirationTime());
-        Assertions.assertEquals(validDriversLicenseNumber1, body[1].getLicense().getDriversLicenseNumber());
-        Assertions.assertEquals(LicenseCategory.C, body[1].getLicense().getCategory());
-        Assertions.assertEquals(validExpirationTime1, body[1].getLicense().getExpirationTime());
-        Assertions.assertEquals(validDriversLicenseNumber2, body[2].getLicense().getDriversLicenseNumber());
-        Assertions.assertEquals(LicenseCategory.D, body[2].getLicense().getCategory());
-        Assertions.assertEquals(validExpirationTime2, body[2].getLicense().getExpirationTime());
+        List<DriverDto> body = responseEntity.getBody();
+
+        Assertions.assertNotEquals(null, body);
+        Assertions.assertEquals(3, body.size());
+        Assertions.assertEquals(validDriversLicenseNumber, body.get(0).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, body.get(0).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, body.get(0).getLicense().getExpirationTime());
+        Assertions.assertEquals(validDriversLicenseNumber1, body.get(1).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.C, body.get(1).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime1, body.get(1).getLicense().getExpirationTime());
+        Assertions.assertEquals(validDriversLicenseNumber2, body.get(2).getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.D, body.get(2).getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime2, body.get(2).getLicense().getExpirationTime());
     }
 
     @Test

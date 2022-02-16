@@ -7,6 +7,7 @@ import com.example.testtask.utils.Messages;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -175,7 +176,8 @@ public class CarControllerTest extends ControllerTest {
                 CarDto.class,
                 id);
 
-        Assertions.assertEquals(HttpStatus.FOUND, responseEntity.getStatusCode());
+        Assertions.assertNotEquals(null, responseEntity.getBody());
+        Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         Assertions.assertEquals(validCarNumber1, responseEntity.getBody().getCarNumber());
         Assertions.assertEquals(CarType.PASSENGER_CAR, responseEntity.getBody().getType());
     }
@@ -189,6 +191,7 @@ public class CarControllerTest extends ControllerTest {
                 CarDto.class,
                 wrongCarId);
 
+        Assertions.assertNotEquals(null, responseEntity.getBody());
         Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
         Assertions.assertNull(responseEntity.getBody().getCarNumber());
         Assertions.assertNull(responseEntity.getBody().getType());
@@ -206,18 +209,21 @@ public class CarControllerTest extends ControllerTest {
 
         carRepository.saveAll(cars);
 
-        ResponseEntity<CarDto[]> responseEntity = restTemplate.getForEntity("/api/cars", CarDto[].class);
+        ResponseEntity<List<CarDto>> responseEntity = restTemplate.exchange("/api/cars", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
-        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.FOUND);
+        Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
 
-        CarDto[] body = responseEntity.getBody();
-        Assertions.assertEquals(3, body.length);
-        Assertions.assertEquals(validCarNumber1, body[0].getCarNumber());
-        Assertions.assertEquals(CarType.PASSENGER_CAR, body[0].getType());
-        Assertions.assertEquals(validCarNumber2, body[1].getCarNumber());
-        Assertions.assertEquals(CarType.TRUCK, body[1].getType());
-        Assertions.assertEquals(validCarNumber3, body[2].getCarNumber());
-        Assertions.assertEquals(CarType.BUS, body[2].getType());
+        List<CarDto> body = responseEntity.getBody();
+
+        Assertions.assertNotEquals(null, body);
+        Assertions.assertEquals(3, body.size());
+        Assertions.assertEquals(validCarNumber1, body.get(0).getCarNumber());
+        Assertions.assertEquals(CarType.PASSENGER_CAR, body.get(0).getType());
+        Assertions.assertEquals(validCarNumber2, body.get(1).getCarNumber());
+        Assertions.assertEquals(CarType.TRUCK, body.get(1).getType());
+        Assertions.assertEquals(validCarNumber3, body.get(2).getCarNumber());
+        Assertions.assertEquals(CarType.BUS, body.get(2).getType());
+
     }
 
     @Test

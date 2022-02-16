@@ -3,7 +3,7 @@ package com.example.testtask.controller;
 import com.example.testtask.dto.DriverDto;
 import com.example.testtask.service.DriverService;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,24 +12,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/drivers")
+@RequiredArgsConstructor
 public class DriverController {
 
     private final DriverService driverService;
 
-    @Autowired
-    public DriverController(DriverService driverService) {
-        this.driverService = driverService;
-    }
-
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.FOUND)
+    @ResponseStatus(HttpStatus.OK)
     @ApiOperation(value = "Найти водителя по id")
     public DriverDto getDriver(@PathVariable Long id) {
         return driverService.getDriver(id);
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.FOUND)
+    @ResponseStatus(HttpStatus.OK)
     @ApiOperation(value = "Найти список всех водителей")
     public List<DriverDto> getDrivers() {
         return driverService.getDrivers();

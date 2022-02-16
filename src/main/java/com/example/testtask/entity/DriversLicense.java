@@ -1,14 +1,13 @@
 package com.example.testtask.entity;
 
 import com.example.testtask.enums.LicenseCategory;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "drivers_license")
 @AllArgsConstructor
@@ -17,7 +16,7 @@ public class DriversLicense {
 
     @Id
     @Column(name = "drivers_license_id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "drivers_license_number", unique = true, nullable = false)
