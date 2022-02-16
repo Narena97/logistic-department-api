@@ -22,7 +22,7 @@ public class Messages {
     public static final String REMOVE_CAR_FROM_DRIVER_THAT_NOT_FOUND = "Could not remove car from driver: driver with id %d not found";
     public static final String REMOVE_CAR_THAT_IS_NOT_FOUND_FROM_DRIVER = "Could not remove car from driver: this driver does not have car with id %d";
 
-    public static final String DRIVERS_LICENSE_NUMBER_IS_NOT_VALID = "Driver's license number should be 10"; //todo текст
+    public static final String DRIVERS_LICENSE_NUMBER_IS_NOT_VALID = "Length of driver's license number should be 10";
     public static final String DRIVERS_LICENSE_NUMBER_IS_EMPTY = "Driver's license number should not be empty";
     public static final String DRIVERS_LICENSE_CATEGORY_IS_EMPTY = "Driver's license category should not be empty";
     public static final String DRIVERS_LICENSE_EXPIRATION_TIME_IS_EMPTY = "Driver's license expiration time should not be empty";
