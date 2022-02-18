@@ -1,7 +1,7 @@
 spring:
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/db_test_task?currentSchema=logistic
+    url: jdbc:postgresql://localhost:5432/db_logistic_department?currentSchema=logistic
     username: postgres
     password: admin
   jpa:

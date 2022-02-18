@@ -11,10 +11,10 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>test-task</artifactId>
+    <artifactId>logistic-department</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>test-task</name>
-    <description>test-task</description>
+    <name>logistic-department</name>
+    <description>logistic-department</description>
 
     <properties>
         <java.version>11</java.version>
