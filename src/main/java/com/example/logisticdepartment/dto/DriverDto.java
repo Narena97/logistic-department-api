@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -24,9 +23,6 @@ public class DriverDto {
     @NotNull(message = Messages.DRIVER_LICENSE_IS_EMPTY)
     @ApiModelProperty(notes = "Водительское удостверение водителя")
     private DriversLicenseDto license;
-
-    @ApiModelProperty(notes = "Список автомобилей, закрепленных за водителем")
-    private List<CarDto> cars;
 
     public DriverDto(DriversLicenseDto license) {
         this.license = license;

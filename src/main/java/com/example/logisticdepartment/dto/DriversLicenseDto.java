@@ -19,16 +19,16 @@ public class DriversLicenseDto {
     @NotNull(message = Messages.DRIVERS_LICENSE_NUMBER_IS_EMPTY)
     @Min(value = 1000000000, message = Messages.DRIVERS_LICENSE_NUMBER_IS_NOT_VALID)
     @DecimalMax(value = "9999999999", message = Messages.DRIVERS_LICENSE_NUMBER_IS_NOT_VALID)
-    @ApiModelProperty(notes = "Уникальный номер водительских прав")
+    @ApiModelProperty(notes = "Уникальный номер водительских прав (длина номера равна 10)")
     private Long driversLicenseNumber;
 
     @NotNull(message = Messages.DRIVERS_LICENSE_CATEGORY_IS_EMPTY)
-    @ApiModelProperty(notes = "Категория водительских прав")
+    @ApiModelProperty(notes = "Категория водительских прав (B, C, D)")
     private LicenseCategory category;
 
     @NotNull(message = Messages.DRIVERS_LICENSE_EXPIRATION_TIME_IS_EMPTY)
     @FutureOrPresent(message = Messages.DRIVERS_LICENSE_EXPIRED)
-    @ApiModelProperty(notes = "Срок действия водительских прав")
+    @ApiModelProperty(notes = "Срок действия водительских прав (формат yyyy-MM-dd)")
     private LocalDate expirationTime;
 
     public DriversLicenseDto(Long driversLicenseNumber,

@@ -1,6 +1,7 @@
 package com.example.logisticdepartment.controller;
 
 import com.example.logisticdepartment.dto.DriverDto;
+import com.example.logisticdepartment.dto.DriverWithCarsDto;
 import com.example.logisticdepartment.service.DriverService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -20,14 +21,14 @@ public class DriverController {
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation(value = "Найти водителя по id")
-    public DriverDto getDriver(@PathVariable Long id) {
+    public DriverWithCarsDto getDriver(@PathVariable Long id) {
         return driverService.getDriver(id);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @ApiOperation(value = "Найти список всех водителей")
-    public List<DriverDto> getDrivers() {
+    public List<DriverWithCarsDto> getDrivers() {
         return driverService.getDrivers();
     }
 

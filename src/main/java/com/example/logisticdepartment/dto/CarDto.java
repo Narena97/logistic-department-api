@@ -27,7 +27,7 @@ public class CarDto {
     private String carNumber;
 
     @NotNull(message = Messages.CAR_TYPE_IS_EMPTY)
-    @ApiModelProperty(notes = "Тип автомобиля")
+    @ApiModelProperty(notes = "Тип автомобиля (PASSENGER_CAR, TRUCK, BUS)")
     private CarType type;
 
     @Null(message = Messages.CAR_DRIVER_ID_IS_PRESENT)

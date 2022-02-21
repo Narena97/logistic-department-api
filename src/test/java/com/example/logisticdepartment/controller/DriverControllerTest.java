@@ -1,6 +1,7 @@
 package com.example.logisticdepartment.controller;
 
 import com.example.logisticdepartment.dto.DriverDto;
+import com.example.logisticdepartment.dto.DriverWithCarsDto;
 import com.example.logisticdepartment.dto.DriversLicenseDto;
 import com.example.logisticdepartment.entity.Car;
 import com.example.logisticdepartment.entity.Driver;
@@ -390,14 +391,15 @@ public class DriverControllerTest extends ControllerTest {
     public void getDriverTest() {
         Long id = createTestDriver().getId();
 
-        ResponseEntity<DriverDto> responseEntity = restTemplate.getForEntity("/api/drivers/{1}",
-                DriverDto.class,
+        ResponseEntity<DriverWithCarsDto> responseEntity = restTemplate.getForEntity("/api/drivers/{1}",
+                DriverWithCarsDto.class,
                 id);
 
         Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        Assertions.assertEquals(validDriversLicenseNumber, responseEntity.getBody().getLicense().getDriversLicenseNumber());
-        Assertions.assertEquals(LicenseCategory.B, responseEntity.getBody().getLicense().getCategory());
-        Assertions.assertEquals(validExpirationTime, responseEntity.getBody().getLicense().getExpirationTime());
+        Assertions.assertNotEquals(null, responseEntity.getBody().getDriverDto());
+        Assertions.assertEquals(validDriversLicenseNumber, responseEntity.getBody().getDriverDto().getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, responseEntity.getBody().getDriverDto().getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, responseEntity.getBody().getDriverDto().getLicense().getExpirationTime());
     }
 
     @Test
@@ -405,12 +407,12 @@ public class DriverControllerTest extends ControllerTest {
     public void getDriverThatIsNotFoundTest() {
         Long wrongDriverId = createTestDriver().getId() + 1L;
 
-        ResponseEntity<DriverDto> responseEntity = restTemplate.getForEntity("/api/drivers/{1}",
-                DriverDto.class,
+        ResponseEntity<DriverWithCarsDto> responseEntity = restTemplate.getForEntity("/api/drivers/{1}",
+                DriverWithCarsDto.class,
                 wrongDriverId);
 
         Assertions.assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        Assertions.assertNull(responseEntity.getBody().getLicense());
+        Assertions.assertNull(responseEntity.getBody().getDriverDto());
         Assertions.assertThrows(EntityNotFoundException.class, () -> driverService.getDriver(wrongDriverId));
     }
 
@@ -432,23 +434,23 @@ public class DriverControllerTest extends ControllerTest {
 
         driverRepository.saveAll(cars);
 
-        ResponseEntity<List<DriverDto>> responseEntity = restTemplate.exchange("/api/drivers", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+        ResponseEntity<List<DriverWithCarsDto>> responseEntity = restTemplate.exchange("/api/drivers", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
         Assertions.assertEquals(responseEntity.getStatusCode(), HttpStatus.OK);
 
-        List<DriverDto> body = responseEntity.getBody();
+        List<DriverWithCarsDto> body = responseEntity.getBody();
 
         Assertions.assertNotEquals(null, body);
         Assertions.assertEquals(3, body.size());
-        Assertions.assertEquals(validDriversLicenseNumber, body.get(0).getLicense().getDriversLicenseNumber());
-        Assertions.assertEquals(LicenseCategory.B, body.get(0).getLicense().getCategory());
-        Assertions.assertEquals(validExpirationTime, body.get(0).getLicense().getExpirationTime());
-        Assertions.assertEquals(validDriversLicenseNumber1, body.get(1).getLicense().getDriversLicenseNumber());
-        Assertions.assertEquals(LicenseCategory.C, body.get(1).getLicense().getCategory());
-        Assertions.assertEquals(validExpirationTime1, body.get(1).getLicense().getExpirationTime());
-        Assertions.assertEquals(validDriversLicenseNumber2, body.get(2).getLicense().getDriversLicenseNumber());
-        Assertions.assertEquals(LicenseCategory.D, body.get(2).getLicense().getCategory());
-        Assertions.assertEquals(validExpirationTime2, body.get(2).getLicense().getExpirationTime());
+        Assertions.assertEquals(validDriversLicenseNumber, body.get(0).getDriverDto().getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.B, body.get(0).getDriverDto().getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime, body.get(0).getDriverDto().getLicense().getExpirationTime());
+        Assertions.assertEquals(validDriversLicenseNumber1, body.get(1).getDriverDto().getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.C, body.get(1).getDriverDto().getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime1, body.get(1).getDriverDto().getLicense().getExpirationTime());
+        Assertions.assertEquals(validDriversLicenseNumber2, body.get(2).getDriverDto().getLicense().getDriversLicenseNumber());
+        Assertions.assertEquals(LicenseCategory.D, body.get(2).getDriverDto().getLicense().getCategory());
+        Assertions.assertEquals(validExpirationTime2, body.get(2).getDriverDto().getLicense().getExpirationTime());
     }
 
     @Test

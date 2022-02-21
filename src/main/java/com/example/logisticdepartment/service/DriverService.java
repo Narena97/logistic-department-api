@@ -2,6 +2,7 @@ package com.example.logisticdepartment.service;
 
 import com.example.logisticdepartment.dto.CarDto;
 import com.example.logisticdepartment.dto.DriverDto;
+import com.example.logisticdepartment.dto.DriverWithCarsDto;
 import com.example.logisticdepartment.dto.DriversLicenseDto;
 import com.example.logisticdepartment.entity.Car;
 import com.example.logisticdepartment.entity.Driver;
@@ -36,15 +37,15 @@ public class DriverService {
     private final DriversLicenseMapper driversLicenseMapper;
     private final CarMapper carMapper;
 
-    public DriverDto getDriver(Long id) {
+    public DriverWithCarsDto getDriver(Long id) {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(String.format(Messages.GET_DRIVER, id)));
         log.info("Driver with id {} was found", id);
-        return driverMapper.driverToDriverDto(driver);
+        return driverMapper.driverToDriverWithCarsDto(driver);
     }
 
-    public List<DriverDto> getDrivers() {
-        List<DriverDto> drivers = driverRepository.findAll().stream().map(driverMapper::driverToDriverDto).collect(Collectors.toList());
-        log.info("Drivers with ids {} were found", drivers.stream().map(DriverDto::getId).collect(Collectors.toList()));
+    public List<DriverWithCarsDto> getDrivers() {
+        List<DriverWithCarsDto> drivers = driverRepository.findAll().stream().map(driverMapper::driverToDriverWithCarsDto).collect(Collectors.toList());
+        log.info("Drivers with ids {} were found", drivers.stream().map(driverWithCarsDto -> driverWithCarsDto.getDriverDto().getId()).collect(Collectors.toList()));
         return drivers;
     }
 
